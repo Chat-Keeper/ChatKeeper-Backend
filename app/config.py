@@ -1,7 +1,6 @@
 import os
 from dotenv import load_dotenv
-from datetime import timedelta
-
+from passlib.context import CryptContext
 # 加载环境变量
 load_dotenv()  # 从 .env 文件或环境变量加载
 
@@ -20,6 +19,9 @@ class Config:
     # MONGO连接池设置
     MONGO_CONNECT_TIMEOUT_MS = int(os.getenv('MONGO_CONNECT_TIMEOUT_MS', '5000'))
     MONGO_SOCKET_TIMEOUT_MS = int(os.getenv('MONGO_SOCKET_TIMEOUT_MS', '30000'))
+
+    # 哈希加密参数
+    pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 
     # DeepSeek API 配置
     DEEPSEEK_API_KEY = os.getenv('DEEPSEEK_API_KEY')
