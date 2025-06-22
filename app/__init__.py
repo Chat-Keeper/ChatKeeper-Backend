@@ -1,6 +1,7 @@
 import os
 from flask import Flask
 from .config import config
+from app.services.mongo import User
 # from .services.mongo import init_mongo
 
 # from .routes.analysis import analysis_bp
@@ -13,7 +14,7 @@ def create_app(config_name="development"):
     app.config.from_object(config[config_name])
 
     # 初始化MongoDB
-    # init_mongo(app)
+    User.init_mongo(app)   #调用User类中的方法
 
     # 注册蓝图
     register_blueprints(app)
@@ -26,3 +27,5 @@ def register_blueprints(app):
     # 注册蓝图并指定URL前缀
     #app.register_blueprint(analysis_bp, url_prefix='/analysis')
     app.register_blueprint(auth_bp, url_prefix='/auth')
+
+
