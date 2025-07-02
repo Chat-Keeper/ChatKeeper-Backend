@@ -18,13 +18,14 @@ class User:
 
         User.users   = db["users"]
         User.tokens  = db["tokens"]
-        User.chats   = db["chats"]
+
+        User.group   = db["chats"]
         User.speakers= db["speakers"]
 
         # 对 user_id、token、chat_id 做索引加速查询
         User.users.create_index("user_id", unique=True)
         User.tokens.create_index("token", unique=True)
-        User.chats.create_index("chat_id", unique=True)
+        User.group.create_index("chat_id", unique=True)
         User.speakers.create_index([("user_id", ASCENDING), ("name", ASCENDING)], unique=True)
 
         #挂载到app上
@@ -34,7 +35,7 @@ class User:
 
     @staticmethod
     #1. 检查数据库中是否已经存在该用户
-    def user_exists(username):
+    def find(username):
 
         user = User.users.find_one({'username': username}, {'_id': 0})
         if user:
@@ -44,16 +45,18 @@ class User:
 
     @staticmethod
         # 2. 创建一个新用户
-    def user_insert(new_user):
+    def insert(new_user):
         user_id = str(uuid4())
         username = new_user['username']
         password = new_user['password']
-        result  = User.users.insert_one({
+        User.users.insert_one({
             "user_id": user_id,
             "username": username,
             "password": password,    
             "created_at": datetime.utcnow()
         })
+        result = User.users.find_one({'user_id': user_id})
+        
         '''
         #生成登录令牌
         token = str(uuid4())
