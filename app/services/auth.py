@@ -8,7 +8,7 @@ class UserService:
     @staticmethod
     def authenticate(username, password):
         """检查用户名和密码是否正确"""
-        user=User.user_exists(username)
+        user=User.find(username)
         if user and check_password_hash(password, user['password']):
             user.pop('password', None)
             return user
@@ -17,7 +17,7 @@ class UserService:
     @staticmethod
     def create_user(username, password):
         """创建新用户（用于注册功能）"""
-        if User.user_find(username):
+        if User.find(username):
             return None, 400 # 用户已存在
         if not is_strong_password or len(username) < 5:
             return None, 401 # 非法的用户名或密码
@@ -25,7 +25,6 @@ class UserService:
             'username': username,
             'password': generate_password_hash(password)
         }
-        #
         result = User.insert(new_user)
         new_user['user_id'] = result['user_id']
         new_user.pop('password', None)
@@ -34,9 +33,10 @@ class UserService:
 
     @staticmethod
     def get_token(user_id):
-        token = Token.find_user(user['user_id'])
+        token = Token.find_user(user_id)
         if token:
             token = UserService.refresh_token(token)
+            return token['token']
         else:
             expires_at = datetime.utcnow() + timedelta(minutes=Config.ttl_minutes)
             token = {
@@ -45,7 +45,7 @@ class UserService:
                 "expires_at": expires_at
             }
             token = Token.insert(token)
-        return token['token']
+            return token['token']
     @staticmethod
     def refresh_token(token):
         expires_at = datetime.utcnow() + timedelta(minutes=Config.ttl_minutes)

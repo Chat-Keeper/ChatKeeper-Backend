@@ -7,8 +7,9 @@ class Token:
         
         @staticmethod
         def insert(token):
-
-            result = User.tokens.insert_one(token)
+            
+            User.tokens.insert_one(token)
+            result = User.tokens.find_one({'token': token['token']})
             return result
         
         @staticmethod
@@ -40,7 +41,7 @@ class Token:
             return result
         
         @staticmethod
-        def get_token(token):
+        def get_token(token: str):
             result = User.tokens.find_one({"token": token})
             if result is None:
                 return None

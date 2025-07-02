@@ -55,7 +55,7 @@ def signup():
             "code": 200,
             "msg": username + " Successfully signed up",
             "data": {
-                "user_id": user["id"],
+                "user_id": user["user_id"],
                 "username": username,
                 "token": token
             }

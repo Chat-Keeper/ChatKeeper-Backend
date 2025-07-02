@@ -49,12 +49,14 @@ class User:
         user_id = str(uuid4())
         username = new_user['username']
         password = new_user['password']
-        result  = User.users.insert_one({
+        User.users.insert_one({
             "user_id": user_id,
             "username": username,
             "password": password,    
             "created_at": datetime.utcnow()
         })
+        result = User.users.find_one({'user_id': user_id})
+        
         '''
         #生成登录令牌
         token = str(uuid4())
