@@ -20,6 +20,10 @@ class Config:
     MONGO_CONNECT_TIMEOUT_MS = int(os.getenv('MONGO_CONNECT_TIMEOUT_MS', '5000'))
     MONGO_SOCKET_TIMEOUT_MS = int(os.getenv('MONGO_SOCKET_TIMEOUT_MS', '30000'))
 
+    # Token管理
+    ttl_minutes = 60
+
+
     # 哈希加密参数
     pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 

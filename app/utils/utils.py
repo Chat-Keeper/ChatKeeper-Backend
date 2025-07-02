@@ -1,4 +1,5 @@
 from app.config import Config
+import secrets
 import re
 def generate_password_hash(password: str) -> str:
     return Config.pwd_context.hash(password)
@@ -7,6 +8,9 @@ def generate_password_hash(password: str) -> str:
 def check_password_hash(password: str, hash: str) -> bool:
     return Config.pwd_context.verify(password, hash)
 
+
+def create_token() -> str:
+    return secrets.token_urlsafe(32)
 
 def is_strong_password(password):
     """检查密码强度"""
