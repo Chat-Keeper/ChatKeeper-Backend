@@ -1,11 +1,11 @@
 import os
 from flask import Flask
-from .config import config
-from app.services.mongo import User
+from app.config import config
+from app.models.user import User
 # from .services.mongo import init_mongo
 
 # from .routes.analysis import analysis_bp
-from .routes.auth import auth_bp
+from app.routes.auth import auth_bp
 
 def create_app(config_name="development"):
     app = Flask(__name__)
