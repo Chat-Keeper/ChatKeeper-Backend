@@ -14,7 +14,7 @@ def login():
             "code": 200,
             "msg": username + " Successfully logged in",
             "data": {
-                "user_id": user["id"],
+                "user_id": user["user_id"],
                 "username": username,
                 "token": token
             }
@@ -37,7 +37,37 @@ def logout():
         "data": {}
     }
 
+@auth_bp.route('/signup', methods=['POST'])
+def signup():
+    username = request.form['username']
+    password = request.form['password']
+    user = UserService.create_user(username, password)
+    token = UserService.create_token()
+    if user:
+        return {
+            "code": 200,
+            "msg": username + " Successfully logged in",
+            "data": {
+                "user_id": user["id"],
+                "username": username,
+                "token": token
+            }
+        }
+    else:
+        return {
+            "code": 400,
+            "msg": "Wrong username or password",
+        }   
+   
+    
+
+
 
 @auth_bp.route('/')
-def log():
-    return '<h1> Hello </h1>'
+def test():
+    user = {
+            "id": "10000000",
+            "username": "123456",
+            "password": "123456"
+        }
+    return user
