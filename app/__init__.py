@@ -7,6 +7,7 @@ from app.models.mongo import Mongo
 from app.routes.data import data_bp
 from app.routes.auth import auth_bp
 
+
 def create_app(config_name="development"):
     app = Flask(__name__)
 
@@ -14,7 +15,7 @@ def create_app(config_name="development"):
     app.config.from_object(config[config_name])
 
     # 初始化MongoDB
-    Mongo.init_mongo(app)   #调用User类中的方法
+    # Mongo.init_mongo(app)   #调用User类中的方法
 
     # 注册蓝图
     register_blueprints(app)
@@ -28,5 +29,3 @@ def register_blueprints(app):
     #app.register_blueprint(analysis_bp, url_prefix='/analysis')
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(data_bp, url_prefix='/data')
-
-

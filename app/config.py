@@ -26,6 +26,7 @@ class Config:
 
     # 文件储存管理
     ALLOWED_EXTENSIONS = {'txt'}
+    UPLOAD_FOLDER = os.environ.get('UPLOAD_FOLDER')
 
     # 哈希加密参数
     pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")

@@ -70,3 +70,6 @@ static/dist/  # 如果使用前端构建工具
 *.tmp
 *.pid
 *.sock
+
+# 临时文件
+storage/

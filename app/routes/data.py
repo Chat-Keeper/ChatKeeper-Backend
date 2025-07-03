@@ -1,5 +1,7 @@
 from flask import Blueprint, request
 from werkzeug.utils import secure_filename
+
+from app.services.data_service import DataService
 from app.utils.utils import allowed_file
 from flask import current_app
 import os
@@ -35,3 +37,6 @@ def upload():
 
     user_dir = os.path.join(current_app.config['UPLOAD_FOLDER'], str(user_id))
     os.makedirs(user_dir, exist_ok=True)
+    save_path = os.path.join(user_dir, file_name)
+    chat_log.save(save_path)
+    return DataService.chat_log_upload(user_id, group_id, save_path)
