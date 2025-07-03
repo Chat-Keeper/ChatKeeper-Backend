@@ -1,4 +1,5 @@
 from flask import Blueprint, request, current_app
+from flask import Blueprint, request, current_app
 from app.services.auth import UserService
 auth_bp = Blueprint('auth', __name__)
 

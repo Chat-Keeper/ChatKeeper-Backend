@@ -1,7 +1,7 @@
 import os
 from flask import Flask
 from app.config import config
-from app.models.user import User
+from app.models.mongo import Mongo
 # from .services.mongo import init_mongo
 
 from app.routes.data import data_bp
@@ -14,7 +14,7 @@ def create_app(config_name="development"):
     app.config.from_object(config[config_name])
 
     # 初始化MongoDB
-    #User.init_mongo(app)   #调用User类中的方法
+    Mongo.init_mongo(app)   #调用User类中的方法
 
     # 注册蓝图
     register_blueprints(app)
