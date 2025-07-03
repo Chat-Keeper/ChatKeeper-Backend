@@ -31,4 +31,4 @@ class Mongo:
         #挂载到app上
         app.mongo_client = client
         app.mongo_db     = db
-        return app
+        return db
