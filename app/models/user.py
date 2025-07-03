@@ -1,43 +1,16 @@
 from datetime import datetime, timedelta
 from uuid import uuid4
 from pymongo import MongoClient, ASCENDING
+from app.models.mongo import Mongo
 
 class User:
-    users    = None
-    tokens   = None
-    chats    = None
-    speakers = None
 
-    @staticmethod
-    def init_mongo(app):
-        # 1. 建立连接
-        connecttion_string = "mongodb://localhost:27017/"
-
-        client = MongoClient(connecttion_string)
-        db      = client["ChatKeeper"]
-
-        User.users   = db["users"]
-        User.tokens  = db["tokens"]
-
-        User.group   = db["chats"]
-        User.speakers= db["speakers"]
-
-        # 对 user_id、token、chat_id 做索引加速查询
-        User.users.create_index("user_id", unique=True)
-        User.tokens.create_index("token", unique=True)
-        User.group.create_index("chat_id", unique=True)
-        User.speakers.create_index([("user_id", ASCENDING), ("name", ASCENDING)], unique=True)
-
-        #挂载到app上
-        app.mongo_client = client
-        app.mongo_db     = db
-        return app
 
     @staticmethod
     #1. 检查数据库中是否已经存在该用户
     def find(username):
 
-        user = User.users.find_one({'username': username}, {'_id': 0})
+        user = Mongo.users.find_one({'username': username})
         if user:
             return user
         else:
@@ -49,13 +22,13 @@ class User:
         user_id = str(uuid4())
         username = new_user['username']
         password = new_user['password']
-        User.users.insert_one({
+        Mongo.users.insert_one({
             "user_id": user_id,
             "username": username,
             "password": password,    
             "created_at": datetime.utcnow()
         })
-        result = User.users.find_one({'user_id': user_id})
+        result = Mongo.users.find_one({'user_id': user_id})
         
         '''
         #生成登录令牌
