@@ -1,4 +1,4 @@
-from flask import Blueprint, request
+from flask import Blueprint, request, current_app
 from app.services.auth import UserService
 auth_bp = Blueprint('auth', __name__)
 
@@ -74,9 +74,5 @@ def signup():
 
 @auth_bp.route('/')
 def test():
-    user = {
-            "id": "10000000",
-            "username": "123456",
-            "password": "123456"
-        }
-    return user
+    url = current_app.config["MONGO_URI"]
+    return url
