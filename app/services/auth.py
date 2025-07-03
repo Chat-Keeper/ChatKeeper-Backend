@@ -1,8 +1,8 @@
 from app.utils.utils import check_password_hash, generate_password_hash, create_token, is_strong_password
 from app.models.user import User
-from datetime import datetime, timedelta
-from app.config import Config
 from app.models.token import Token
+from datetime import datetime, timedelta
+from flask import current_app
 import secrets
 class UserService:
     @staticmethod
@@ -38,7 +38,7 @@ class UserService:
             token = UserService.refresh_token(token)
             return token['token']
         else:
-            expires_at = datetime.utcnow() + timedelta(minutes=Config.ttl_minutes)
+            expires_at = datetime.utcnow() + timedelta(minutes=current_app.config["TTL_MINUTES"])
             token = {
                 "token": create_token(),
                 "user_id": user_id,
@@ -48,7 +48,7 @@ class UserService:
             return token['token']
     @staticmethod
     def refresh_token(token):
-        expires_at = datetime.utcnow() + timedelta(minutes=Config.ttl_minutes)
+        expires_at = datetime.utcnow() + timedelta(minutes=current_app.config["TTL_MINUTES"])
         token = Token.refresh(token['user_id'], expires_at)
         return token
 

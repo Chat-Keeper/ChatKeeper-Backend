@@ -4,7 +4,7 @@ from app.config import config
 from app.models.user import User
 # from .services.mongo import init_mongo
 
-# from .routes.analysis import analysis_bp
+from app.routes.data import data_bp
 from app.routes.auth import auth_bp
 
 def create_app(config_name="development"):
@@ -14,7 +14,7 @@ def create_app(config_name="development"):
     app.config.from_object(config[config_name])
 
     # 初始化MongoDB
-    User.init_mongo(app)   #调用User类中的方法
+    #User.init_mongo(app)   #调用User类中的方法
 
     # 注册蓝图
     register_blueprints(app)
@@ -27,5 +27,6 @@ def register_blueprints(app):
     # 注册蓝图并指定URL前缀
     #app.register_blueprint(analysis_bp, url_prefix='/analysis')
     app.register_blueprint(auth_bp, url_prefix='/auth')
+    app.register_blueprint(data_bp, url_prefix='/data')
 
 

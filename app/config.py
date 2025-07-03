@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
 from passlib.context import CryptContext
+
 # 加载环境变量
 load_dotenv()  # 从 .env 文件或环境变量加载
 
@@ -21,8 +22,10 @@ class Config:
     MONGO_SOCKET_TIMEOUT_MS = int(os.getenv('MONGO_SOCKET_TIMEOUT_MS', '30000'))
 
     # Token管理
-    ttl_minutes = 60
+    TTL_MINUTES = 60
 
+    # 文件储存管理
+    ALLOWED_EXTENSIONS = {'txt'}
 
     # 哈希加密参数
     pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
@@ -57,10 +60,12 @@ class Config:
         "5. 任何有趣的观察结果\n\n分析要求：使用专业、客观的语言，提供结构化分析报告。"
     )
 
+
 class DevelopmentConfig(Config):
     """开发环境配置"""
     DEBUG = True
     pass
+
 
 class TestingConfig(Config):
     """测试环境配置"""

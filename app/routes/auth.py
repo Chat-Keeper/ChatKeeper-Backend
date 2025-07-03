@@ -1,4 +1,4 @@
-from flask import Blueprint, request
+from flask import Blueprint, request, current_app
 from app.services.auth import UserService
 auth_bp = Blueprint('auth', __name__)
 
@@ -75,7 +75,7 @@ def signup():
 @auth_bp.route('/')
 def test():
     user = {
-            "id": "10000000",
+            "id": current_app.config["SECRET_KEY"],
             "username": "123456",
             "password": "123456"
         }
