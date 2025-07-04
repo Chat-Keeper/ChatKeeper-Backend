@@ -17,7 +17,7 @@ class User:
     '''
 
     @staticmethod
-    # 1. 检查数据库中是否已经存在该用户
+    # 1. 检查数据库中是否已经存在该用户1
     def find_name(username):
         user = Mongo.users.find_one({'username': username})
         if user:
