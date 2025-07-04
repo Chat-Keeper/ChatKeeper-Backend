@@ -29,7 +29,7 @@ class Config:
     UPLOAD_FOLDER = os.environ.get('UPLOAD_FOLDER')
 
     # 哈希加密参数
-    pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
+    PWD_CONTEXT = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 
     # DeepSeek API 配置
     DEEPSEEK_API_KEY = os.getenv('DEEPSEEK_API_KEY')
