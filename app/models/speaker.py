@@ -8,8 +8,6 @@ from pymongo.errors import DuplicateKeyError
 Mongo = LocalProxy(lambda: current_app.mongo_db)
 
 class Speaker:
-
-
     
     @staticmethod
     def create(user_id, new_info) -> dict:
@@ -21,8 +19,8 @@ class Speaker:
             "speaker_name": new_info['speaker_name'],
             "speaker_qq": new_info['speaker_qq'],
             "analyzed": False,
-            "tags": [],
             "last_analyzed_at": None,
+            "tags": [],
             "personality": [],
             "description": ""
         })
@@ -64,5 +62,34 @@ class Speaker:
         return speaker
     
     @staticmethod
-    def update(speaker_id, featrue: dict) -> bool:
-        pass
+    def update(speaker_id, feature: dict) -> bool:
+        '''
+        feature = {
+            'tags': [],
+            'personality': [],
+            'description': " "
+        }
+        '''
+        speaker = Mongo.speakers.find_one({'speaker_id': speaker_id})
+        if speaker is None:
+            return False
+
+        tag_list = speaker['tags'] + feature['tags']
+        tag_list = list(set(tag_list))
+        personality_list = speaker['personality'] + feature['personality']
+        personality_list = list(set(personality_list))
+        description_str = speaker['description'] + " " + feature['description'] 
+
+        Mongo.speakers.update_one(
+            {'speaker_id': speaker_id},
+            {'$set': {
+                'analyzed': True,
+                'last_analyzed_at': datetime.utcnow(),
+                'tags': tag_list,
+                'personality': personality_list,
+                'decription': description_str
+            }}
+        )
+        return True
+        
+

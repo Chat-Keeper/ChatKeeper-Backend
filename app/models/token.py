@@ -8,12 +8,11 @@ Mongo = LocalProxy(lambda: current_app.mongo_db)
 
 class Token:
     '''
-    {
-        "user_id": user_id,
-        "username": username,
-        "password": password,    
-        "created_at": datetime.utcnow()
-    }
+            token = {
+                "token": create_token(),
+                "user_id": user_id,
+                "expires_at": expires_at
+            }
     '''
 
     @staticmethod
@@ -48,6 +47,13 @@ class Token:
 
         result = Mongo.tokens.find_one({"user_id": user['user_id']})  # 返回对应令牌
         return result
+
+    @staticmethod
+    def getuser(token: str) -> str:
+        token = Mongo.tokens.find_one({'token': token})
+        if token is None:
+            return None
+        return token['user_id']
 
     @staticmethod
     def get_token(token: str):

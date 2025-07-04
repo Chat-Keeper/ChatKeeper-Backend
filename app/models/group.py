@@ -12,6 +12,30 @@ class Group:
 
     @staticmethod
     def create(user_id, group_name):
+        '''
+        Mongo.groups.insert_one({
+            'user_id': str,
+            'group_id': str,
+            'group_name': str,
+            'start_time': str,
+            'end_time': str,
+            'message_num': int
+            'speaker_num': int
+            'speakers': [{
+                    'speaker_id': str,
+                    'speaker_name': str,
+                    'speaker_qq': str,
+                    'analyzed': bool,
+                    'speaker_msg_freq': int
+                }],
+            'messages': [{
+                    'time_str': str,
+                    'speaker_name': str,
+                    'speaker_qq': str,
+                    'content': str
+                }]
+        })
+        '''
         #user = Mongo.users.find_one({'user_id': user_id})
         result = Mongo.groups.find_one({'user_id': user_id, 'group_name': group_name})
         if result is not None:
@@ -70,7 +94,7 @@ class Group:
         return data
 
 
-    @staticmethod  #重构, 每天聊天记录分开存，上传的同时实现更新（如两次上传有时间重叠要去重）
+    @staticmethod  #重构, 每天聊天记录分开存，上传的同时实现更新（如两次上传有时间重叠要去重）!
     def upload(user_id, group_id, messages: list):
         group = Mongo.groups.find_one({'user_id': user_id, 'group_id': group_id})
         if group is None:
@@ -78,42 +102,20 @@ class Group:
         user = Mongo.users.find_one({'user_id': user_id})
         if user is None:
             return None
-        info = {
-            'user_id': user_id,
-            'upload_time': datetime.utcnow()
-        }
-        if len(messages) == 0:
+        if not messages:
             return None
-        group['messages'].append(info)
-        group['messages'].append(messages)
-        group['message_num'] += len(messages)
-
-        # 更新时间
-        if group['start_time'] is None:
-            group['start_time'] = messages[0]['time_str']
-            group['end_time'] = messages[-1]['time_str']
-        else:
-            time_format = "%Y-%m-%d %H:%M:%S"
-            start = datetime.strptime(group['start_time'], time_format)
-            end = datetime.strptime(group['end_time'], time_format)
-            curr_start = datetime.strptime(messages[0]['time_str'], time_format)
-            curr_end = datetime.strptime(messages[-1]['time_str'], time_format)
-            if curr_start < start:
-                start = curr_start
-            if curr_end > end:
-                end = curr_end
-            start_str = start.strftime(time_format)
-            end_str = end.strftime(time_format)
-            group['start_time'] = start_str
-            group['end_time'] = end_str
-
+        
         # 更新speakers列表
         for message in messages:
+            if not message:
+                continue
+            speakers_list = group['speakers']
             value = message['speaker_qq']
-            index = next((i for i, d in enumerate(group['speakers']) if d.get('speaker_qq') == value), None)
+            index = next((i for i, d in enumerate(speakers_list) if d.get('speaker_qq') == value), None)
             
             if index is not None:
-                group['speakers'][index]['speaker_msg_freq'] += 1
+                if message not in group['messages']:
+                    speakers_list[index]['speaker_msg_freq'] += 1
             else:
                 group['speaker_num'] += 1
                 new_info = {
@@ -131,6 +133,29 @@ class Group:
                 }
                 group['speakers'].append(new_speaker)
 
+
+        
+        time_format = "%Y-%m-%d %H:%M:%S"
+        existing = group['messages']
+        combined = existing + messages
+        combined.sort(key=lambda m: datetime.strptime(m['time_str'], time_format))
+        seen = set()
+        merged_msgs = []
+        for msg in combined:
+            key = (msg['time_str'], msg['speaker_qq'], msg['content'])
+            if key not in seen:
+                seen.add(key)
+                merged_msgs.append(msg)
+
+        # 更新消息列表和计数
+        group['messages'] = merged_msgs
+        group['message_num'] = len(merged_msgs)       
+        
+        #更新时间
+        if merged_msgs:
+            group['start_time'] = merged_msgs[0]['time_str']
+            group['end_time'] = merged_msgs[-1]['time_str']        
+
         #更新数据库中group
         Mongo.groups.update_one(
             {'user_id': user_id, 'group_id': group_id},
@@ -138,24 +163,45 @@ class Group:
                 'messages': group['messages'],
                 'message_num': group['message_num'],
                 'start_time': group['start_time'],
-                'end_time':   group['end_time'],
-                'speakers':   group['speakers'],
-                'speaker_num':group['speaker_num'],
+                'end_time': group['end_time'],
+                'speakers': group['speakers'],
+                'speaker_num': group['speaker_num'],
             }}
-         )
-        
+        )
 
-        data = {
+        # 返回数据
+        return{
             'group_id': group['group_id'],
-            'group_name': group['group_name'],
+            'group_name': group.get('group_name'),
             'speaker_num': group['speaker_num'],
             'speaker_list': group['speakers'],
             'start_time': group['start_time'],
             'end_time': group['end_time'],
-            'message_num': group['message_num']
+            'message_num': group['message_num'],
         }
-
-        return data
+    
     @staticmethod
-    def acquire(user_id, group_id, speaker_id) -> list:   #返回类型同传入的messages
-        pass
+    def acquire(user_id, group_id, speaker_id) -> list:   #返回类型同传入的messages,发言的前10条和后十条
+        group = Mongo.groups.find_one({'user_id': user_id, 'group_id': group_id})
+        if group is None:
+            return None
+        msg_list = group['messages']
+        combined = []
+        for idx, message in enumerate(msg_list):
+            if message['speaker_id'] == speaker_id:
+                front_ten = msg_list[max(0, idx-10):idx]
+                back_ten = msg_list[idx+1:min(len(msg_list), idx+11)]
+                combined += front_ten + [message] + back_ten
+
+        time_format = "%Y-%m-%d %H:%M:%S"
+        combined.sort(key=lambda m: datetime.strptime(m['time_str'], time_format))
+        seen = set()
+        merged_msgs = []
+        for msg in combined:
+            key = (msg['time_str'], msg['speaker_qq'], msg['content'])
+            if key not in seen:
+                seen.add(key)
+                merged_msgs.append(msg)  
+        return merged_msgs      
+
+
