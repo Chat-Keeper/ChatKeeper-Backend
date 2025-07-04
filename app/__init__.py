@@ -14,8 +14,8 @@ def create_app(config_name="development"):
     app.config.from_object(config[config_name])
 
     # 初始化MongoDB
-    db = Mongo.init_mongo(app)  # 调用User类中的方法
-    app.mongo = db
+    Mongo.init_mongo(app)  # 调用User类中的方法
+    
 
     # 注册蓝图
     register_blueprints(app)

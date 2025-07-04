@@ -1,10 +1,10 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from uuid import uuid4
 from pymongo import MongoClient, ASCENDING
 from flask import current_app
 from werkzeug.local import LocalProxy
 
-Mongo = LocalProxy(lambda: current_app.mongo)
+Mongo = LocalProxy(lambda: current_app.mongo_db)
 
 class Token:
     '''
