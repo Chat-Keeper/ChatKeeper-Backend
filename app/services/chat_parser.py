@@ -91,7 +91,7 @@ class ChatLogParser:
             'content': content.strip()
         }
 
-    def _parse_time(self, time_str: str):
+    def _parse_time(self, time_str: str) -> str:
         """解析QQ消息时间格式"""
         try:
             # QQ时间格式: "2024-04-21 1:35:26"
