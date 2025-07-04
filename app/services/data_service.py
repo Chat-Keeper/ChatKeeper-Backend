@@ -3,7 +3,8 @@ from datetime import datetime
 from flask import current_app
 from app.services.chat_parser import ChatLogParser
 from app.models.group import Group
-
+from app.models.user import User
+from app.models.speaker import Speaker
 
 class DataService:
     @staticmethod
@@ -17,25 +18,48 @@ class DataService:
         """
         parser = ChatLogParser(file_path)
         messages = parser.parse_messages()
-        result = Group.upload(group_id, user_id, messages)
-        return messages
+        result = Group.upload(user_id, group_id, messages)
+        return result
 
     @staticmethod
     def create_new_group(user_id: str, group_name: str) -> bool:
-        pass
-
+        user = User.find_id(user_id)
+        if user is None:
+            return False
+        else:
+            Group.create(user_id, group_name)
+        return True
+    
     @staticmethod
     def rename_group(user_id: str, group_id: str, group_name: str) -> bool:
-        pass
+        group = Group.find(user_id, group_id)
+        if group is None:
+            return False
+        else:
+            Group.rename(user_id, group_id, group_name)
+            return True
+        
 
     @staticmethod
     def list_all_speaker(user_id: str) -> list:
-        pass
+        user = User.find_id(user_id)
+        if user is None:
+            return None
+        else:
+            return Speaker.list(user_id)
 
     @staticmethod
     def get_speaker_detail(user_id: str, speaker_id: str) -> dict:
-        pass
+        speaker = Speaker.find(user_id, speaker_id)
+        if speaker is None:
+            return None
+        else:
+            return Speaker.get(user_id, speaker_id)
 
     @staticmethod
     def list_all_group(user_id: str) -> list:
-        pass
+        user = User.find_id(user_id)
+        if user is None:
+            return None
+        else:
+            Group.list(user_id)

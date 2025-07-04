@@ -1,15 +1,24 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from uuid import uuid4
 from pymongo import MongoClient, ASCENDING
-from app.models.mongo import Mongo
+from flask import current_app
+from werkzeug.local import LocalProxy
+
+Mongo = LocalProxy(lambda: current_app.mongo_db)
 
 class User:
-
+    '''
+    {
+            "user_id": user_id,
+            "username": username,
+            "password": password,     
+            "created_at": datetime.utcnow()
+        }
+    '''
 
     @staticmethod
-    #1. 检查数据库中是否已经存在该用户
+    # 1. 检查数据库中是否已经存在该用户
     def find(username):
-
         user = Mongo.users.find_one({'username': username})
         if user:
             return user
@@ -17,7 +26,14 @@ class User:
             return None
 
     @staticmethod
-        # 2. 创建一个新用户
+    def find_id(user_id):
+        user = Mongo.users.find_one({'user_id': user_id})
+        if user:
+            return user
+        else:
+            return None
+    @staticmethod
+    # 2. 创建一个新用户
     def insert(new_user):
         user_id = str(uuid4())
         username = new_user['username']
@@ -25,16 +41,16 @@ class User:
         Mongo.users.insert_one({
             "user_id": user_id,
             "username": username,
-            "password": password,    
+            "password": password,     
             "created_at": datetime.utcnow()
         })
         result = Mongo.users.find_one({'user_id': user_id})
-        
+
         '''
-        #生成登录令牌
+        # 生成登录令牌
         token = str(uuid4())
-        ttl_minutes = 10  #登录失效时间
-        expires_at = datetime.utcnow() + timedelta(minutes=ttl_minutes)
+        ttl_minutes = 10  # 登录失效时间
+        expires_at = datetime.utcnow() +(minutes=ttl_minutes)
         User.tokens.insert_one({
             "token": token,
             "user_id": user_id,
@@ -59,7 +75,8 @@ class User:
             "messages": messages
         })
         return chat_id
-        '''
+    '''
+
     '''
     @staticmethod
     # 6. 更新 speakers 集合
@@ -89,8 +106,6 @@ class User:
                 },
                 upsert=True
             )
-            '''
-
-
+    '''
 
 

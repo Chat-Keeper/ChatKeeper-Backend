@@ -56,13 +56,14 @@ class UserService:
 
     @staticmethod
     def validate_token(user_id: str, access_token: str) -> bool:
-        """验证令牌有效性"""
+        #"""验证令牌有效性"""
         token = Token.get_token(access_token)
         if token:
-            if token['access_expiry'] < datetime.utcnow():
+            if token['expires_at'] < datetime.utcnow():
                 UserService.destroy_token(token['user_id'])
                 return False
             return token['user_id'] == user_id
+
 
     @staticmethod
     def destroy_token(user_id: str) -> bool:

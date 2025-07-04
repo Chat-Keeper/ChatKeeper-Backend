@@ -4,11 +4,11 @@ import re
 
 
 def generate_password_hash(password: str) -> str:
-    return current_app.config["pwd_context"].hash(password)
+    return current_app.config["PWD_CONTEXT"].hash(password)
 
 
 def check_password_hash(password: str, hash: str) -> bool:
-    return current_app.config["pwd_context"].verify(password, hash)
+    return current_app.config["PWD_CONTEXT"].verify(password, hash)
 
 
 def create_token() -> str:

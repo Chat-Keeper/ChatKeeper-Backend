@@ -49,8 +49,8 @@ def data_upload():
 
 @data_bp.route('/group/list', methods=['GET'])
 def group_list():
-    user_id = request.args.get('user_id')
-    token = request.args.get('token')
+    user_id = request.form['user_id']
+    token = request.form['token']
     if not UserService.validate_token(user_id, token):
         return {
             "code": 401,
@@ -75,9 +75,9 @@ def group_list():
 
 @data_bp.route('/group/new', methods=['POST'])
 def group_new():
-    user_id = request.args.get('user_id')
-    token = request.args.get('token')
-    group_name = request.args.get('group_name')
+    user_id = request.form['user_id']
+    token = request.form['token']
+    group_name = request.form['group_name']
     if not UserService.validate_token(user_id, token):
         return {
             "code": 401,
@@ -100,10 +100,10 @@ def group_new():
 
 @data_bp.route('/group/rename', methods=['POST'])
 def group_rename():
-    user_id = request.args.get('user_id')
-    token = request.args.get('token')
-    group_id = request.args.get('group_id')
-    group_name = request.args.get('group_name')
+    user_id = request.form['user_id']
+    token = request.form['token']
+    group_id = request.form['group_id']
+    group_name = request.form['group_name']
     if not UserService.validate_token(user_id, token):
         return {
             "code": 401,
@@ -126,8 +126,8 @@ def group_rename():
 
 @data_bp.route('/speaker/list', methods=['GET'])
 def speaker_list():
-    user_id = request.args.get('user_id')
-    token = request.args.get('token')
+    user_id = request.form['user_id']
+    token = request.form['token']
     if not UserService.validate_token(user_id, token):
         return {
             "code": 401,
@@ -156,9 +156,9 @@ def speaker_list():
 
 @data_bp.route('/speaker/details', methods=['GET'])
 def speaker_detail():
-    user_id = request.args.get('user_id')
-    token = request.args.get('token')
-    speaker_id = request.args.get('speaker_id')
+    user_id = request.form['user_id']
+    token = request.form['token']
+    speaker_id = request.form['speaker_id']
     if not UserService.validate_token(user_id, token):
         return {
             "code": 401,

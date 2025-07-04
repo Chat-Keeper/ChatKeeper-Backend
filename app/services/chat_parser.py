@@ -1,8 +1,6 @@
-# app/services/chat_parser.py
 import re
 from typing import List, Dict
 from datetime import datetime
-
 
 class ChatLogParser:
     """聊天记录解析器（适配QQ导出格式）"""
@@ -41,10 +39,10 @@ class ChatLogParser:
                     if header_match:
                         # 保存上一条消息
                         if current_header and content_lines:
-                            time_str, speaker_name, speaker_id = current_header
+                            time_str, speaker_name, speaker_qq = current_header
                             content = '\n'.join(content_lines)
                             messages.append(self._format_message(
-                                time_str, speaker_name, speaker_id, content
+                                time_str, speaker_name, speaker_qq, content
                             ))
                             content_lines = []
 
@@ -62,15 +60,15 @@ class ChatLogParser:
                         # 添加到当前消息内容
                         content_lines.append(line)
 
-            # 添加最后一条消息
-            if current_header and content_lines:
-                time_str, speaker_name, speaker_id = current_header
-                content = '\n'.join(content_lines)
-                messages.append(self._format_message(
-                    time_str, speaker_name, speaker_id, content
-                ))
+                # 添加最后一条消息
+                if current_header and content_lines:
+                    time_str, speaker_name, speaker_qq = current_header
+                    content = '\n'.join(content_lines)
+                    messages.append(self._format_message(
+                        time_str, speaker_name, speaker_qq, content
+                    ))
 
-            return messages
+                return messages
 
         except UnicodeDecodeError:
             # 尝试使用其他编码
@@ -82,16 +80,16 @@ class ChatLogParser:
             raise RuntimeError(f"解析聊天记录失败: {str(e)}")
 
     def _format_message(self, time_str: str, speaker_name: str,
-                        speaker_id: str, content: str) -> Dict:
+                        speaker_qq: str, content: str) -> Dict:
         """格式化消息为字典"""
         return {
             'time_str': time_str.strip(),
             'speaker_name': speaker_name.strip(),
-            'speaker_id': speaker_id.strip(),
+            'speaker_qq': speaker_qq.strip(),
             'content': content.strip()
         }
 
-    def _parse_time(self, time_str: str) -> str:
+    def _parse_time(self, time_str: str):
         """解析QQ消息时间格式"""
         try:
             # QQ时间格式: "2024-04-21 1:35:26"
