@@ -65,10 +65,9 @@ class Group:
         user = Mongo.groups.find_one({'user_id': user_id})
         if user is None:
             return None
-        data = list(Mongo.groups.find({'user_id': user_id}, {'user_id': 0, 'messages': 0}))
-        result = {'group_num': len(data)}
-        result['group_list'] = data
-        return result
+        data = list(Mongo.groups.find({'user_id': user_id}, {'user_id': 0, 'messages': 0, '_id':0}))
+        data.append(len(data))
+        return data
 
 
     @staticmethod
@@ -117,29 +116,33 @@ class Group:
                 group['speakers'][index]['speaker_msg_freq'] += 1
             else:
                 group['speaker_num'] += 1
-                speaker = Speaker.create(user_id, message)  # 返回一个字典
-                # 处理掉多余信息，添加speaker_words
-                if speaker:
-                    keys_to_remove = ['user_id','last_analyzed_at', 'identity','tags', 'description']
-                    for key in keys_to_remove:
-                        if key in speaker:
-                            del speaker[key]
-                else:
-                    continue
-                # 新增一项并插入到group['speakers']
-                speaker['speaker_msg_freq'] = 1
-                group['speakers'].append(speaker)
-                Mongo.groups.update_one(
-                    {'user_id': user_id, 'group_id': group_id},
-                    {'$set': {
-                        'messages': group['messages'],
-                        'message_num': group['message_num'],
-                        'start_time': group['start_time'],
-                        'end_time':   group['end_time'],
-                        'speakers':   group['speakers'],
-                        'speaker_num':group['speaker_num'],
-                    }}
-                )
+                new_info = {
+                    'speaker_name': message['speaker_name'],
+                    'speaker_qq': message['speaker_qq']
+                }
+                speaker = Speaker.create(user_id, new_info)  # 返回一个字典
+                
+                new_speaker = {
+                    'speaker_id': speaker['speaker_id'],
+                    'speaker_name': speaker['speaker_name'],
+                    'speaker_qq': speaker['speaker_qq'],
+                    'analyzed': speaker['analyzed'],
+                    'speaker_msg_freq': 1
+                }
+                group['speakers'].append(new_speaker)
+
+        #更新数据库中group
+        Mongo.groups.update_one(
+            {'user_id': user_id, 'group_id': group_id},
+            {'$set': {
+                'messages': group['messages'],
+                'message_num': group['message_num'],
+                'start_time': group['start_time'],
+                'end_time':   group['end_time'],
+                'speakers':   group['speakers'],
+                'speaker_num':group['speaker_num'],
+            }}
+         )
         
 
         data = {

@@ -62,4 +62,4 @@ class DataService:
         if user is None:
             return None
         else:
-            Group.list(user_id)
+            return Group.list(user_id)
