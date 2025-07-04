@@ -18,7 +18,7 @@ class User:
 
     @staticmethod
     # 1. 检查数据库中是否已经存在该用户
-    def find(username):
+    def find_name(username):
         user = Mongo.users.find_one({'username': username})
         if user:
             return user
@@ -32,6 +32,7 @@ class User:
             return user
         else:
             return None
+        
     @staticmethod
     # 2. 创建一个新用户
     def insert(new_user):

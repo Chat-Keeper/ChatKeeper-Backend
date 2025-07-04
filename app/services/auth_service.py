@@ -10,7 +10,7 @@ class UserService:
     @staticmethod
     def authenticate(username: str, password: str):
         """检查用户名和密码是否正确"""
-        user = User.find(username)
+        user = User.find_name(username)
         if user and check_password_hash(password, user['password']):
             user.pop('password', None)
             return user
@@ -19,7 +19,7 @@ class UserService:
     @staticmethod
     def create_user(username: str, password: str):
         """创建新用户（用于注册功能）"""
-        if User.find(username):
+        if User.find_name(username):
             return None, 400  # 用户已存在
         if not is_strong_password or len(username) < 5:
             return None, 401  # 非法的用户名或密码

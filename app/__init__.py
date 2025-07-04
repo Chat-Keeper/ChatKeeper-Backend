@@ -6,10 +6,20 @@ from app.models.mongo import Mongo
 
 from app.routes.data import data_bp
 from app.routes.auth import auth_bp
+import json
+from bson import ObjectId
+from flask import Flask
+
+class MongoJSONEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, ObjectId):
+            return str(o)
+        return super().default(o)
 
 def create_app(config_name="development"):
     app = Flask(__name__)
 
+    app.json_encoder = MongoJSONEncoder
     # 导入配置
     app.config.from_object(config[config_name])
 
