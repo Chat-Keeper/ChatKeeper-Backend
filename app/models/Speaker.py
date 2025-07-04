@@ -62,3 +62,7 @@ class Speaker:
         if speaker is None:
             return None
         return speaker
+    
+    @staticmethod
+    def update(speaker_id, featrue: dict) -> bool:
+        pass

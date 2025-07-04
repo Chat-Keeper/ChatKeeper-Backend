@@ -70,7 +70,7 @@ class Group:
         return data
 
 
-    @staticmethod
+    @staticmethod  #重构, 每天聊天记录分开存，上传的同时实现更新（如两次上传有时间重叠要去重）
     def upload(user_id, group_id, messages: list):
         group = Mongo.groups.find_one({'user_id': user_id, 'group_id': group_id})
         if group is None:
@@ -156,3 +156,6 @@ class Group:
         }
 
         return data
+    @staticmethod
+    def acquire(user_id, group_id, speaker_id) -> list:   #返回类型同传入的messages
+        pass
