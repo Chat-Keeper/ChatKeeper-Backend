@@ -84,6 +84,7 @@ class Speaker:
                 'description': feature['description']
             }}
         )
+        
         return True
         
 
