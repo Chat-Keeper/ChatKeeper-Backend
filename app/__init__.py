@@ -10,11 +10,13 @@ import json
 from bson import ObjectId
 from flask import Flask
 
+
 class MongoJSONEncoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, ObjectId):
             return str(o)
         return super().default(o)
+
 
 def create_app(config_name="development"):
     app = Flask(__name__)
@@ -25,12 +27,12 @@ def create_app(config_name="development"):
 
     # 初始化MongoDB
     Mongo.init_mongo(app)  # 调用User类中的方法
-    
 
     # 注册蓝图
     register_blueprints(app)
 
     return app
+
 
 def register_blueprints(app):
     """注册所有蓝图到应用"""
@@ -38,4 +40,3 @@ def register_blueprints(app):
     # app.register_blueprint(analysis_bp, url_prefix='/analysis')
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(data_bp, url_prefix='/data')
-

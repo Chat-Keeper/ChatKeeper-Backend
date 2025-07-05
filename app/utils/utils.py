@@ -1,4 +1,4 @@
-from flask import current_app
+from flask import current_app, request
 import secrets
 import re
 

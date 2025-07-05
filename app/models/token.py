@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any
 from uuid import uuid4
 from pymongo import MongoClient, ASCENDING
 from flask import current_app
@@ -49,7 +50,7 @@ class Token:
         return result
 
     @staticmethod
-    def getuser(token: str) -> str:
+    def getuser(token: str) -> str | None:
         token = Mongo.tokens.find_one({'token': token})
         if token is None:
             return None
