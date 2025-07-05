@@ -3,6 +3,7 @@ from app.models.group import Group
 from app.models.user import User
 from app.models.speaker import Speaker
 
+
 class DataService:
     @staticmethod
     def chat_log_upload(user_id: str, group_id: str, file_path: str):
@@ -26,14 +27,13 @@ class DataService:
         return result
 
     @staticmethod
-    def create_new_group(user_id: str, group_name: str) -> bool:
-        user = User.find_id(user_id)
-        if user is None:
-            return False
+    def create_new_group(user_id: str, group_name: str) -> str | None:
+        group = Group.create(user_id, group_name)
+        if group:
+            return group["group_id"]
         else:
-            Group.create(user_id, group_name)
-        return True
-    
+            return None
+
     @staticmethod
     def rename_group(user_id: str, group_id: str, group_name: str) -> bool:
         group = Group.find(user_id, group_id)
@@ -42,10 +42,9 @@ class DataService:
         else:
             Group.rename(user_id, group_id, group_name)
             return True
-        
 
     @staticmethod
-    def list_all_speaker(user_id: str) -> list:
+    def list_all_speaker(user_id: str) -> list | None:
         user = User.find_id(user_id)
         if user is None:
             return None
@@ -53,7 +52,7 @@ class DataService:
             return Speaker.list(user_id)
 
     @staticmethod
-    def get_speaker_detail(user_id: str, speaker_id: str) -> dict:
+    def get_speaker_detail(user_id: str, speaker_id: str) -> dict | None:
         speaker = Speaker.find(user_id, speaker_id)
         if speaker is None:
             return None
@@ -61,9 +60,13 @@ class DataService:
             return Speaker.get(user_id, speaker_id)
 
     @staticmethod
-    def list_all_group(user_id: str) -> list:
+    def list_all_group(user_id: str) -> list | None:
         user = User.find_id(user_id)
         if user is None:
             return None
         else:
             return Group.list(user_id)
+
+    @staticmethod
+    def delete_group(user_id: str, group_id: str) -> bool:
+        return Group.destroy(user_id, group_id)

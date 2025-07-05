@@ -81,12 +81,14 @@ def group_list(user_id):
 @token_required
 def group_new(user_id):
     group_name = request.form['group_name']
-    result = DataService.create_new_group(user_id, group_name)
-    if result:
+    group_id = DataService.create_new_group(user_id, group_name)
+    if group_id is not None:
         return {
             "code": 200,
             "msg": "Successfully create new groups.",
-            "data": {}
+            "data": {
+                "group_id": group_id
+            }
         }, 200
     else:
         return {
@@ -155,5 +157,23 @@ def speaker_detail(user_id):
         return {
             "code": 400,
             "msg": "Can't get details of speaker.",
+            "data": {}
+        }, 400
+
+
+@data_bp.route('/group/delete', methods=['POST'])
+@token_required
+def group_delete(user_id):
+    group_id = request.form['group_id']
+    if DataService.delete_group(user_id,group_id):
+        return {
+            "code": 200,
+            "msg": "Successfully delete the group",
+            "data": {}
+        }, 200
+    else:
+        return {
+            "code": 400,
+            "msg": "Fail to delete the group.",
             "data": {}
         }, 400

@@ -1,5 +1,4 @@
-from flask import Blueprint, request, current_app
-from flask import Blueprint, request, current_app
+from flask import Blueprint, request
 from app.services.auth_service import UserService
 from app.utils.auth import token_required
 
@@ -75,6 +74,16 @@ def signup():
             }, 401
 
 
+@auth_bp.route('/verification', methods=['POST'])
+@token_required
+def verify(user_id):
+    return {
+        "code": 200,
+        "msg": "Valid token",
+        "data": {}
+    }
+
+
 @auth_bp.route('/')
 def test():
-    pass
+    return "hello world"
