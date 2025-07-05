@@ -6,6 +6,7 @@ from app.models.mongo import Mongo
 
 from app.routes.data import data_bp
 from app.routes.auth import auth_bp
+from app.routes.analysis import analysis_bp
 import json
 from bson import ObjectId
 from flask import Flask
@@ -40,3 +41,6 @@ def register_blueprints(app):
     # app.register_blueprint(analysis_bp, url_prefix='/analysis')
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(data_bp, url_prefix='/data')
+    app.register_blueprint(analysis_bp, url_prefix='/analysis')
+    #analysis_bp = Blueprint('analysis', __name__)
+

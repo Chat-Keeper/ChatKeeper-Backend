@@ -74,7 +74,7 @@ class Group:
         )
         result = Mongo.groups.find_one({'user_id': user_id, 'group_id': group_id})
         return result
-
+    '''
     @staticmethod
     def speaker_find(group_id, speaker_id):
         group = Mongo.groups.find_one({'group_id': group_id})
@@ -84,7 +84,7 @@ class Group:
         if result is None:
             return None
         return result
-    
+    '''
     @staticmethod
     def list(user_id):
         user = Mongo.groups.find_one({'user_id': user_id})
@@ -203,6 +203,8 @@ class Group:
         if group is None:
             return None
         msg_list = group['messages']
+        if not msg_list:
+            return None
         combined = []
         for idx, message in enumerate(msg_list):
             if message['speaker_id'] == speaker_id:
@@ -223,18 +225,54 @@ class Group:
 
     @staticmethod
     def getAssociations(user_id, group_id, keyword: str):
-        '''
         group = Mongo.groups_find_one({'user_id': user_id, 'group_id': group_id})
         if group is None:
             return None
-        keyword_list = DeepseekService.get_keywords(keyword)
+        
         speaker_list = group['speakers']
         messages = group['messages']
-
+        if not messages:
+            return None
+        keyword_list = DeepseekService.get_keywords(keyword)
+        result = []
         for message in messages:
-            for key in keyword_list:
-                if key in message:
-                '''
+            if keyword in message['content']:
+                speaker_qq = message['speaker_qq']
+                result_idx = next((index for index, speaker in enumerate(result) if speaker["speaker_qq"] == speaker_qq), -1)
+                if result_idx == -1:  #匹配失败
+                    speaker_list_idx = next((index for index, speaker in enumerate(speaker_list) if speaker["speaker_qq"] == speaker_qq), -1)
+                    new_speaker = speaker_list[speaker_list_idx]
+                    new_speaker['match_count'] = 10
+                    result.append(new_speaker)
+                else:
+                    result[result_idx]['match_count'] += 10
+            else:
+                for key in keyword_list:
+                    if key in message['content']:
+                        speaker_qq = message['speaker_qq']
+                        result_idx = next((index for index, speaker in enumerate(result) if speaker["speaker_qq"] == speaker_qq), -1)
+                        if result_idx == -1:
+                            speaker_list_idx = next((index for index, speaker in enumerate(speaker_list) if speaker["speaker_qq"] == speaker_qq), -1)
+                            new_speaker = speaker_list[speaker_list_idx]
+                            new_speaker['match_count'] = 5
+                            result.append(new_speaker)
+                        else:
+                            result[result_idx]['match_count'] += 5
+                        break
+
+        for speaker in result:
+            speaker['relativity'] = speaker['match_count'] / speaker['speaker_msg_freq']
+            speaker.pop('speaker_msg_freq', None)
+            speaker.pop('match_count', None)
+        
+        return result
+                   
+
+
+
+
+
+                    
                     
 
 

@@ -57,6 +57,8 @@ class Speaker:
             'speaker_qq': 1, 
             'analyzed': 1
         }))
+        if not data:
+            return None
         data.append(len(data))
         return data
     

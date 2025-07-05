@@ -1,4 +1,5 @@
 from openai import OpenAI
+import requests
 import os
 import re
 import ast
@@ -7,8 +8,8 @@ from datetime import datetime
 from uuid import uuid4
 from pymongo import MongoClient, ASCENDING
 from flask import current_app
-from app.models.speaker import Speaker
-from app.models.group import Group
+
+
 
 
 class DeepseekService:
@@ -48,29 +49,50 @@ class DeepseekService:
     
     @staticmethod
     def generate(content):
+        #import os
+        os.environ["NO_PROXY"] = "api.deepseek.com"  # 禁用代理
+        API_KEY = "sk-4ea4ac74dc8d4d3ea512c9be9a4a3dfb" 
+
         # 初始化 OpenAI 客户端（DeepSeek兼容 OpenAI API）
-        api_key = current_app.config['DEEPSEEK_API_KEY']
-        base_url = current_app.config['DEEPSEEK_BASE_URL']
+        API_KEY = current_app.config['DEEPSEEK_API_KEY']
+        BASE_URL = current_app.config['DEEPSEEK_BASE_URL']
         prompt = current_app.config['DEEPSEEK_PROMPT']
 
-        client = OpenAI(api_key=api_key, base_url=base_url)
+        client = OpenAI(api_key = 'sk-4ea4ac74dc8d4d3ea512c9be9a4a3dfb', base_url = "https://api.deepseek.com/v1")
         response = client.chat.completions.create(
-            model="deepseek-chat",
-            messages=[{"role": "system", "content": prompt}, {"role": "user", "content": content}],
+            model="deepseek-reasoner",
+            messages = [
+                {"role": "system", "content": prompt}, 
+                {"role": "user", "content": content}
+            ],
             stream=False
         )
 
         #异常检测
         if not response.choices or not response.choices[0].message.content:
             raise ConnectionError
-        s = response.choices[0].message.content
-        if not DeepseekService.is_valid_deepseek_reply(s):
+        result = response.choices[0].message.content
+        if not DeepseekService.is_valid_deepseek_reply(result):
             raise ConnectionError
         
-        return s
-
+        return result
+        '''
+        headers = {
+            "Authorization": f"Bearer {API_KEY}",
+            "Content-Type": "application/json"
+        }
+        data = {
+            "model": "deepseek-reasoner",
+            "messages": [{"role": "user", "content": "Hello"}]
+        }
+        response = requests.post(
+            "https://api.deepseek.com/v1/chat/completions",
+            headers=headers,
+            json=data
+        )
+        return response.text
     @staticmethod
-    def analysis(user_id, group_id, speaker_id,  info :list):
+    def analysis(user_id, group_id, speaker_id):
         '''
         info = [
             {
@@ -81,34 +103,47 @@ class DeepseekService:
             }
         ]
         '''
+        #局部导入，防止循环导入
+        from app.models.group import Group
+        from app.models.speaker import Speaker
         speaker = Speaker.find(user_id, speaker_id)
         if speaker is None:
             raise RuntimeError
-
-        #将之前的分析结果转换为字符串
-        analysis_dict = {
-            'identity': speaker['identity'],
-            'tags': speaker['tags'],
-            'description': speaker['description']
-        }
-        pre_analysis = (
-            f"Identity: {analysis_dict['identity']}\n"
-            f"tags: {json.dumps(analysis_dict['tags'], ensure_ascii=False)}\n"
-            f"description: \"{analysis_dict['description']}\"\n"
-        )
-
+        group = Group.find(user_id, group_id)
+        if group is None:
+            raise RuntimeError
+        info = Group.acquire(user_id, group_id, speaker_id)
+        if info is None:
+            raise RuntimeError
         #定义输出格式要求,确定输出内容
         output_format = (
             "identity: [i_e, n_s, t_f, p_j], 其中每个元素是 0-100 范围内的 integer\n"
             "tags: [], 一个含有 3-5 个关键词的列表，元素为字符串\n"
             "description: 一个长度为 300-500 的字符串"
         )
-        instructions = (
+        #将之前的分析结果转换为字符串
+        if speaker['analyzed'] == True:
+            analysis_dict = {
+                'identity': speaker['identity'],
+                'tags': speaker['tags'],
+                'description': speaker['description']
+            }
+            pre_analysis = (
+                f"Identity: {analysis_dict['identity']}\n"
+                f"tags: {json.dumps(analysis_dict['tags'], ensure_ascii=False)}\n"
+                f"description: \"{analysis_dict['description']}\"\n"
+            )
+            instructions = (
             "并结合你上次的分析结果：\n"
             f"{pre_analysis}"
             "对于你的回答格式，要求你生成格式如下：\n"
             f"{output_format}"
-        )
+            )
+        else:
+            instructions = (
+            "对于你的回答格式，要求你生成格式如下：\n"
+            f"{output_format}"
+            )
 
         #构造聊天记录字符串
         user_messages = "\n".join(
@@ -172,4 +207,19 @@ class DeepseekService:
         }
     @staticmethod
     def get_keywords(keyword):
-        pass
+
+        description = keyword + '\n根据我给你的关键词，生成与这个关键词意思相近的100个关键词\n'
+        #定义输出格式要求,确定输出内容
+        output_format = "keyword_list: ['', '', ''], 其中每个元素是一个关键词\n"
+        instructions = (
+            "对于你的回答格式，要求你生成格式如下：\n"
+            f"{output_format}"
+        )
+        content = (
+            f"{description}\n\n"
+            f"{instructions}\n\n"
+        )
+        str = DeepseekService.generate(content)
+        # 提取列表部分并转换
+        keyword_list = eval(str.split(': ')[1])
+        return keyword_list

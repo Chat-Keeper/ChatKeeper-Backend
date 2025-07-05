@@ -22,7 +22,7 @@ class Config:
     MONGO_SOCKET_TIMEOUT_MS = int(os.getenv('MONGO_SOCKET_TIMEOUT_MS', '30000'))
 
     # Token管理
-    TTL_MINUTES = 60
+    TTL_MINUTES = 600
 
     # 文件储存管理
     ALLOWED_EXTENSIONS = {'txt'}

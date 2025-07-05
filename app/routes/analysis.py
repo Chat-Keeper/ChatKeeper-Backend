@@ -1,6 +1,7 @@
 from flask import Blueprint, request
 from app.utils.auth import token_required
 analysis_bp = Blueprint('analysis', __name__)
+from app.services.deppseek_service import DeepseekService
 
 
 @analysis_bp.route('/speaker', methods=['POST'])
