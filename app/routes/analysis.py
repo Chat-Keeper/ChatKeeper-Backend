@@ -13,17 +13,20 @@ def speaker(user_id):
     except RuntimeError as e:
         return {
             "code": 400,
-            "msg": "Failed to get data from database"
+            "msg": "Failed to get data from database",
+            "data": {}
         }, 400
     except ConnectionError as c:
         return {
             "code": 405,
-            "msg": "Failed to connect to deepseek service"
+            "msg": "Failed to connect to deepseek service",
+            "data": {}
         }
     except Exception as e:
         return {
             "code": 404,
-            "msg": f"Unknown error:{str(e)}"
+            "msg": f"Unknown error:{str(e)}",
+            "data": {}
         }
     return {
         "code": 200,
@@ -42,17 +45,20 @@ def search(user_id):
     except RuntimeError as e:
         return {
             "code": 400,
-            "msg": "Failed to get data from database"
+            "msg": "Failed to get data from database",
+            "data": {}
         }, 400
     except ConnectionError as c:
         return {
             "code": 405,
-            "msg": "Failed to connect to deepseek service"
+            "msg": "Failed to connect to deepseek service",
+            "data": {}
         }
     except Exception as e:
         return {
             "code": 404,
             "msg": f"Unknown error:{str(e)}",
+            "data": {}
         }
     return {
         "code": 200,

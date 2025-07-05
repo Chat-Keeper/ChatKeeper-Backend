@@ -16,18 +16,21 @@ def data_upload(user_id):
     if 'chat_log' not in request.files:
         return {
             "code": 402,
-            "msg": "No file part"
+            "msg": "No file part",
+            "data": {}
         }, 402
     chat_log = request.files['chat_log']
     if chat_log.filename == '':
         return {
             "code": 402,
-            "msg": "'No selected file'"
+            "msg": "'No selected file'",
+            "data": {}
         }, 402
     if not allowed_file(chat_log.filename):
         return {
             "code": 402,
-            "msg": "Invalid file extension. Only .txt files are allowed"
+            "msg": "Invalid file extension. Only .txt files are allowed",
+            "data": {}
         }, 402
     file_name = secure_filename(chat_log.filename)
 
@@ -40,17 +43,20 @@ def data_upload(user_id):
     except ValueError as v:
         return {
             "code": 403,
-            "msg": str(v)
+            "msg": str(v),
+            "data": {}
         }, 403
     except RuntimeError as r:
         return {
             "code": 400,
-            "msg": str(r)
+            "msg": str(r),
+            "data": {}
         }, 400
     except Exception as e:
         return {
             "code": 404,
-            "msg": f"Unknown error:{str(e)}"
+            "msg": f"Unknown error:{str(e)}",
+            "data": {}
         }, 404
     return {
         "code": 200,
@@ -73,7 +79,8 @@ def group_list(user_id):
     else:
         return {
             "code": 400,
-            "msg": "Can't find any groups."
+            "msg": "Can't find any groups.",
+            "data": {}
         }, 400
 
 
