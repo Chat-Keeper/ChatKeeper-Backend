@@ -25,6 +25,7 @@ def login():
         return {
             "code": 400,
             "msg": "Wrong username or password",
+            "data": {}
         }, 400
 
 
@@ -66,11 +67,13 @@ def signup():
             return {
                 "code": 400,
                 "msg": "username has already been registered",
+                "data": {}
             }, 400
         elif error_code == 401:
             return {
                 "code": 401,
                 "msg": "invalid username or password",
+                "data": {}
             }, 401
 
 
