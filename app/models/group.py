@@ -4,6 +4,7 @@ from pymongo import MongoClient, ASCENDING
 from flask import current_app
 from werkzeug.local import LocalProxy
 from app.models.speaker import Speaker
+from app.services.deppseek_service import DeepseekService
 
 Mongo = LocalProxy(lambda: current_app.mongo_db)
 
@@ -93,6 +94,22 @@ class Group:
         data.append(len(data))
         return data
 
+    @staticmethod
+    def update(user_id, group_id, speaker_id):
+        group = Mongo.gorups.find_one({'user_id': user_id, 'group_id': group_id, 'speaker_id': speaker_id})
+        speaker_list = group['speakers']
+        speaker = Speaker.find(user_id, speaker_id)
+        index = speaker_list.index(speaker)
+        speaker_list[index]['analyzed'] = True
+
+    @staticmethod
+    def destroy(user_id, group_id):
+        group = Mongo.groups.find_one({'user_id': user_id, 'group_id': group_id})
+        if group is None:
+            return False
+        Mongo.groups.delete_one({'user_id': user_id, 'group_id': group_id})
+        return True
+        
 
     @staticmethod  #重构, 每天聊天记录分开存，上传的同时实现更新（如两次上传有时间重叠要去重）!
     def upload(user_id, group_id, messages: list):
@@ -203,5 +220,22 @@ class Group:
                 seen.add(key)
                 merged_msgs.append(msg)  
         return merged_msgs      
+
+    @staticmethod
+    def getAssociations(user_id, group_id, keyword: str):
+        '''
+        group = Mongo.groups_find_one({'user_id': user_id, 'group_id': group_id})
+        if group is None:
+            return None
+        keyword_list = DeepseekService.get_keywords(keyword)
+        speaker_list = group['speakers']
+        messages = group['messages']
+
+        for message in messages:
+            for key in keyword_list:
+                if key in message:
+                '''
+                    
+
 
 
