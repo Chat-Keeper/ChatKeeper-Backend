@@ -3,7 +3,6 @@ from app.models.user import User
 from app.models.token import Token
 from datetime import datetime, timedelta
 from flask import current_app
-import secrets
 
 
 class UserService:
@@ -56,7 +55,8 @@ class UserService:
 
     @staticmethod
     def validate_token(user_id: str, access_token: str) -> bool:
-        #"""验证令牌有效性"""
+        if user_id == "":
+            return False
         token = Token.get_token(access_token)
         if token:
             if token['expires_at'] < datetime.utcnow():
@@ -64,7 +64,14 @@ class UserService:
                 return False
             return token['user_id'] == user_id
 
-
     @staticmethod
     def destroy_token(user_id: str) -> bool:
         return Token.destroy(user_id)
+
+    @staticmethod
+    def get_user_id(token: str) -> str:
+        user_id = Token.getuser(token)
+        if user_id is None:
+            return ""
+        else:
+            return user_id

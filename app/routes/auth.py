@@ -1,7 +1,8 @@
 from flask import Blueprint, request, current_app
 from flask import Blueprint, request, current_app
 from app.services.auth_service import UserService
-import os
+from app.utils.auth import token_required
+
 auth_bp = Blueprint('auth', __name__)
 
 
@@ -20,31 +21,30 @@ def login():
                 "username": username,
                 "token": token
             }
-        }
+        }, 200
     else:
         return {
             "code": 400,
             "msg": "Wrong username or password",
-        }
-
+        }, 400
 
 
 @auth_bp.route('/logout', methods=['POST'])
-def logout():
-    user_id = request.form['user_id']
-    token = request.form['token']
+@token_required
+def logout(user_id):
     if UserService.destroy_token(user_id):
         return {
             "code": 200,
             "msg": "Successfully logged out",
             "data": {}
-        }
+        }, 200
     else:
         return {
             "code": 400,
-            "msg": "Wrong token",
+            "msg": "Failed to log out",
             "data": {}
-        }
+        }, 400
+
 
 @auth_bp.route('/signup', methods=['POST'])
 def signup():
@@ -61,19 +61,20 @@ def signup():
                 "username": username,
                 "token": token
             }
-        }
+        }, 200
     else:
         if error_code == 400:
             return {
                 "code": 400,
-                "msg": "user has already been registered",
-            }
-        if error_code == 401:
+                "msg": "username has already been registered",
+            }, 400
+        elif error_code == 401:
             return {
                 "code": 401,
                 "msg": "invalid username or password",
-            }
+            }, 401
+
 
 @auth_bp.route('/')
 def test():
-    return current_app.config["UPLOAD_FOLDER"]
+    pass

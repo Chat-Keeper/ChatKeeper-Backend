@@ -67,7 +67,8 @@ class ChatLogParser:
                     messages.append(self._format_message(
                         time_str, speaker_name, speaker_qq, content
                     ))
-
+                if len(messages) == 0:
+                    raise RuntimeError(f"No information resolved")
                 return messages
 
         except UnicodeDecodeError:
@@ -75,9 +76,9 @@ class ChatLogParser:
             try:
                 return self._parse_with_backup_encodings()
             except Exception:
-                raise ValueError("无法解码文件，请使用UTF-8格式")
+                raise ValueError("Unable to decode file, please use UTF-8 format")
         except Exception as e:
-            raise RuntimeError(f"解析聊天记录失败: {str(e)}")
+            raise RuntimeError(f"Failed to parse chat-log: {str(e)}")
 
     def _format_message(self, time_str: str, speaker_name: str,
                         speaker_qq: str, content: str) -> Dict:

@@ -1,6 +1,3 @@
-import os
-from datetime import datetime
-from flask import current_app
 from app.services.chat_parser import ChatLogParser
 from app.models.group import Group
 from app.models.user import User
@@ -17,7 +14,12 @@ class DataService:
             file_path: 上传文件的完整路径
         """
         parser = ChatLogParser(file_path)
-        messages = parser.parse_messages()
+        try:
+            messages = parser.parse_messages()
+        except ValueError as v:
+            raise ValueError("Unable to decode file, please use UTF-8 format")
+        except Exception as e:
+            raise RuntimeError(f"Failed to parse chat-log: {str(e)}")
         result = Group.upload(user_id, group_id, messages)
         return result
 
