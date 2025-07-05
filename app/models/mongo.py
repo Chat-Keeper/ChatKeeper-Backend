@@ -27,18 +27,7 @@ class Mongo:
         Mongo.tokens.create_index("token", unique=True)
         Mongo.groups.create_index("group_id", unique=True)
         Mongo.speakers.create_index("speaker_id", unique=True)
-        '''
-        Mongo.speakers.create_index([("user_id", ASCENDING), ("name", ASCENDING)], unique=True)
-
-        Mongo.speakers.drop_index("user_id_1_name_1")
-
-        # 2. 在 speaker_qq 字段上创建一个唯一索引
-        #    参数格式：列表内是 (字段名, 索引方向) 的元组；unique=True 表示唯一索引
-        Mongo.speakers.create_index(
-            [("speaker_qq", 1)],
-            unique=True
-        )
-'''
+        
 
         # 挂载到app上
         app.mongo_client = client

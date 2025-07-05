@@ -21,12 +21,18 @@ class Speaker:
             "analyzed": False,
             "last_analyzed_at": None,
             "tags": [],
-            "personality": [],
-            "description": ""
+            'identity': {
+                "i_e": 0,
+                "n_s": 0,
+                "t_f": 0,
+                "p_j": 0
+            },
+            "description": " "
         })
         result = Mongo.speakers.find_one({
             'user_id': user_id,
-            'speaker_qq': new_info['speaker_qq']
+            'speaker_qq': new_info['speaker_qq'],
+            'speaker_name': new_info['speaker_name']
         })
        
         return result
@@ -62,32 +68,20 @@ class Speaker:
         return speaker
     
     @staticmethod
-    def update(speaker_id, feature: dict) -> bool:
-        '''
-        feature = {
-            'tags': [],
-            'personality': [],
-            'description': " "
-        }
-        '''
-        speaker = Mongo.speakers.find_one({'speaker_id': speaker_id})
+    def update(user_id, speaker_id, feature: dict) -> bool:
+
+        speaker = Mongo.speakers.find_one({'user_id': user_id, 'speaker_id': speaker_id})
         if speaker is None:
             return False
 
-        tag_list = speaker['tags'] + feature['tags']
-        tag_list = list(set(tag_list))
-        personality_list = speaker['personality'] + feature['personality']
-        personality_list = list(set(personality_list))
-        description_str = speaker['description'] + " " + feature['description'] 
-
         Mongo.speakers.update_one(
-            {'speaker_id': speaker_id},
+            {'user_id': user_id, 'speaker_id': speaker_id},
             {'$set': {
                 'analyzed': True,
                 'last_analyzed_at': datetime.utcnow(),
-                'tags': tag_list,
-                'personality': personality_list,
-                'decription': description_str
+                'tags': feature['tags'],
+                'identity': feature['identity'],
+                'description': feature['description']
             }}
         )
         return True
