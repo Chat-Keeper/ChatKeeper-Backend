@@ -37,11 +37,21 @@ def data_upload(user_id):
     chat_log.save(save_path)
     try:
         result = DataService.chat_log_upload(user_id, group_id, save_path)
-    except Exception as e:
+    except ValueError as v:
         return {
             "code": 403,
-            "msg": str(e)
+            "msg": str(v)
         }, 403
+    except RuntimeError as r:
+        return {
+            "code": 400,
+            "msg": str(r)
+        }, 400
+    except Exception as e:
+        return {
+            "code": 404,
+            "msg": f"Unknown error:{str(e)}"
+        }, 404
     return {
         "code": 200,
         "msg": "Successfully uploaded data",
@@ -133,7 +143,7 @@ def speaker_list(user_id):
 @data_bp.route('/speaker/details', methods=['GET'])
 @token_required
 def speaker_detail(user_id):
-    speaker_id = request.form['speaker_id']
+    speaker_id = request.args.get("speaker_id")
     speaker_info = DataService.get_speaker_detail(user_id, speaker_id)
     if speaker_info:
         return {

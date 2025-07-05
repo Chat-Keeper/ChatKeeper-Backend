@@ -19,8 +19,10 @@ class DataService:
         except ValueError as v:
             raise ValueError("Unable to decode file, please use UTF-8 format")
         except Exception as e:
-            raise RuntimeError(f"Failed to parse chat-log: {str(e)}")
+            raise ValueError(str(e))
         result = Group.upload(user_id, group_id, messages)
+        if result is None:
+            raise RuntimeError("Failed to save data in database")
         return result
 
     @staticmethod
