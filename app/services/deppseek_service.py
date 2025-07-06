@@ -149,6 +149,10 @@ class DeepseekService:
             f"{instructions}\n\n"
             f"聊天记录如下：\n{user_messages}"
         )
+        content += f"\n\n你要分析的用户是 {speaker['speaker_name'] + ' (' + speaker['speaker_qq'] + ')'}"
+        content += f"\n请注意区别群聊氛围与个人性格，排除群聊整体氛围对于个人性格分析的影响"
+
+        print(content)
 
         str = DeepseekService.generate(content)
         #return str

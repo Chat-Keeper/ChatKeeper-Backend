@@ -8,7 +8,7 @@ from app.models.speaker import Speaker
 @analysis_bp.route('/speaker', methods=['POST'])
 @token_required
 def speaker(user_id):
-    speaker_id = request.form['speaker_id']
+    speaker_id = request.json['speaker_id']
     speaker = Speaker.find(user_id, speaker_id)
     #return speaker
     group_id = speaker['group_id']
@@ -42,8 +42,8 @@ def speaker(user_id):
 @analysis_bp.route('/search', methods=['POST'])
 @token_required
 def search(user_id):
-    group_id = request.form['group_id']
-    keyword = request.form['keyword']
+    group_id = request.json['group_id']
+    keyword = request.json['keyword']
     try:
         result = Group.getAssociations(user_id, group_id, keyword)
     except RuntimeError as e:

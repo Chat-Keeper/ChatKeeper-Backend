@@ -87,7 +87,7 @@ def group_list(user_id):
 @data_bp.route('/group/new', methods=['POST'])
 @token_required
 def group_new(user_id):
-    group_name = request.form['group_name']
+    group_name = request.json['group_name']
     group_id = DataService.create_new_group(user_id, group_name)
     if group_id is not None:
         return {
@@ -108,8 +108,8 @@ def group_new(user_id):
 @data_bp.route('/group/rename', methods=['POST'])
 @token_required
 def group_rename(user_id):
-    group_id = request.form['group_id']
-    group_name = request.form['group_name']
+    group_id = request.json['group_id']
+    group_name = request.json['group_name']
     result = DataService.rename_group(user_id, group_id, group_name)
     if result:
         return {
@@ -135,7 +135,7 @@ def speaker_list(user_id):
             "msg": "Successfully list all speakers.",
             "data": {
                 "speaker_nums": len(speaker_list_info),
-                "speaker_info": speaker_list_info
+                "speaker_list": speaker_list_info
             }
         }, 200
     else:
@@ -144,7 +144,7 @@ def speaker_list(user_id):
             "msg": "Can't find any groups.",
             "data": {
                 "speaker_nums": len(speaker_list_info),
-                "speaker_info": speaker_list_info
+                "speaker_list": speaker_list_info
             }
         }, 400
 
@@ -171,7 +171,7 @@ def speaker_detail(user_id):
 @data_bp.route('/group/delete', methods=['POST'])
 @token_required
 def group_delete(user_id):
-    group_id = request.form['group_id']
+    group_id = request.json['group_id']
     if DataService.delete_group(user_id,group_id):
         return {
             "code": 200,
