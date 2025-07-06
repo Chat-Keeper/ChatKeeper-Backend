@@ -50,11 +50,11 @@ class Token:
         return result
 
     @staticmethod
-    def getuser(token: str) -> str | None:
-        token = Mongo.tokens.find_one({'token': token})
-        if token is None:
+    def getuser(token: str) -> str :
+        result = Mongo.tokens.find_one({'token': token})
+        if result is None:
             return None
-        return token['user_id']
+        return result['user_id']
 
     @staticmethod
     def get_token(token: str):

@@ -4,6 +4,7 @@ from pymongo import MongoClient, ASCENDING
 from flask import current_app
 from werkzeug.local import LocalProxy
 from app.models.speaker import Speaker
+from app.services.deppseek_service import DeepseekService
 
 Mongo = LocalProxy(lambda: current_app.mongo_db)
 
@@ -73,7 +74,7 @@ class Group:
         )
         result = Mongo.groups.find_one({'user_id': user_id, 'group_id': group_id})
         return result
-
+    '''
     @staticmethod
     def speaker_find(group_id, speaker_id):
         group = Mongo.groups.find_one({'group_id': group_id})
@@ -83,7 +84,7 @@ class Group:
         if result is None:
             return None
         return result
-    
+    '''
     @staticmethod
     def list(user_id):
         user = Mongo.groups.find_one({'user_id': user_id})
@@ -93,6 +94,33 @@ class Group:
         data.append(len(data))
         return data
 
+    @staticmethod
+    def update(user_id, group_id, speaker_id):
+        group = Mongo.gorups.find_one({'user_id': user_id, 'group_id': group_id})
+        if group is None:
+            return None
+        speaker_list = group['speakers']
+        speaker = Speaker.find(user_id, speaker_id)
+        speaker_qq = speaker['speaker_qq']
+        idx = next((index for index, speaker in enumerate(speaker_list) if speaker["speaker_qq"] == speaker_qq))
+        speaker_list[idx]['analyzed'] = True
+        group['speakers'] = speaker_list
+
+        Mongo.groups.update_one(
+            {'user_id': user_id, 'group_id': group_id},
+            {'$set': {
+                'speakers': group['speakers']
+            }}
+        )
+
+    @staticmethod
+    def destroy(user_id, group_id):
+        group = Mongo.groups.find_one({'user_id': user_id, 'group_id': group_id})
+        if group is None:
+            return False
+        Mongo.groups.delete_one({'user_id': user_id, 'group_id': group_id})
+        return True
+        
 
     @staticmethod  #重构, 每天聊天记录分开存，上传的同时实现更新（如两次上传有时间重叠要去重）!
     def upload(user_id, group_id, messages: list):
@@ -186,9 +214,13 @@ class Group:
         if group is None:
             return None
         msg_list = group['messages']
+        if not msg_list:
+            return None
         combined = []
+        speaker = Speaker.find(user_id, speaker_id)
+        speaker_qq = speaker['speaker_qq']
         for idx, message in enumerate(msg_list):
-            if message['speaker_id'] == speaker_id:
+            if message['speaker_qq'] == speaker_qq:
                 front_ten = msg_list[max(0, idx-10):idx]
                 back_ten = msg_list[idx+1:min(len(msg_list), idx+11)]
                 combined += front_ten + [message] + back_ten
@@ -203,5 +235,58 @@ class Group:
                 seen.add(key)
                 merged_msgs.append(msg)  
         return merged_msgs      
+
+    @staticmethod
+    def getAssociations(user_id, group_id, keyword: str):
+        group = Mongo.groups.find_one({'user_id': user_id, 'group_id': group_id})
+        if group is None:
+            raise RuntimeError
+        
+        speaker_list = group['speakers']
+        messages = group['messages']
+        if not messages:
+            return RuntimeError
+        keyword_list = DeepseekService.get_keywords(keyword)
+        result = []
+        for message in messages:
+            if keyword in message['content']:
+                speaker_qq = message['speaker_qq']
+                result_idx = next((index for index, speaker in enumerate(result) if speaker["speaker_qq"] == speaker_qq), -1)
+                if result_idx == -1:  #匹配失败
+                    speaker_list_idx = next((index for index, speaker in enumerate(speaker_list) if speaker["speaker_qq"] == speaker_qq), -1)
+                    new_speaker = speaker_list[speaker_list_idx]
+                    new_speaker['match_count'] = 10
+                    result.append(new_speaker)
+                else:
+                    result[result_idx]['match_count'] += 10
+            else:
+                for key in keyword_list:
+                    if key in message['content']:
+                        speaker_qq = message['speaker_qq']
+                        result_idx = next((index for index, speaker in enumerate(result) if speaker["speaker_qq"] == speaker_qq), -1)
+                        if result_idx == -1:
+                            speaker_list_idx = next((index for index, speaker in enumerate(speaker_list) if speaker["speaker_qq"] == speaker_qq), -1)
+                            new_speaker = speaker_list[speaker_list_idx]
+                            new_speaker['match_count'] = 5
+                            result.append(new_speaker)
+                        else:
+                            result[result_idx]['match_count'] += 5
+                        break
+
+        for speaker in result:
+            speaker['relativity'] = speaker['match_count'] / speaker['speaker_msg_freq'] * 10
+            speaker.pop('speaker_msg_freq', None)
+            speaker.pop('match_count', None)
+        
+        return result
+                   
+
+
+
+
+
+                    
+                    
+
 
 

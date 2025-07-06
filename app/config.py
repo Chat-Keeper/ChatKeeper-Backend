@@ -59,9 +59,11 @@ class Config:
         'DEFAULT_ANALYSIS_PROMPT',
         "你是一个专业的聊天记录分析师。请分析以下聊天内容，包括但不限于：\n"
         "1. 主要讨论话题\n2. 情感倾向\n3. 关键人物\n4. 潜在问题或冲突\n"
-        "5. 任何有趣的观察结果\n\n分析要求：使用专业、客观的语言，提供结构化分析报告。"
+        "5. 任何有趣的观察结果\n\n分析要求：使用专业、客观的语言."
     )
 
+    #聊天记录分析关键提示词
+    ANALYSIS_PROMPT = os.getenv('ANALYSIS_PROMPT')
 
 class DevelopmentConfig(Config):
     """开发环境配置"""
