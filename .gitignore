@@ -6,15 +6,15 @@ __pycache__/
 
 # 虚拟环境
 venv/
-.env/
+# .env/
 .venv/
-env/
+# env/
 ENV/
 
 # 开发环境变量和敏感数据
-.env
-.env.local
-.env.*.local
+# .env
+# .env.local
+# .env.*.local
 secrets.py
 config.py  # 如果包含敏感信息
 instance/  # Flask 实例文件夹（常含本地配置）
