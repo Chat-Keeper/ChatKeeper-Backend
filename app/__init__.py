@@ -3,6 +3,7 @@ from flask import Flask
 from app.config import config
 from app.models.mongo import Mongo
 # from .services.mongo import init_mongo
+from flask_cors import CORS
 
 from app.routes.data import data_bp
 from app.routes.auth import auth_bp
@@ -21,6 +22,9 @@ class MongoJSONEncoder(json.JSONEncoder):
 
 def create_app(config_name="development"):
     app = Flask(__name__)
+
+    # 允许跨域访问
+    CORS(app)
 
     app.json_encoder = MongoJSONEncoder
     # 导入配置
