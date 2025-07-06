@@ -84,10 +84,11 @@ class DeepseekService:
         if info is None:
             raise RuntimeError
 
+        speaker_qq = speaker['speaker_qq']
         analysis_prompt = """\
     请你按照以下要求，只输出类似实例输出的pyhton代码，即一个符合Python语法的字典：
     identity:  
-    - 一个包含以下四个成员的字典：
+    - 一个包含以下四个成员的表示用户身份字典：其中i_e, n_s, t_f, p_j都是MBTI的评判标准
     - i_e (Introversion–Extraversion)：0–100 之间的整数，数值越大表示越偏向外向  
     - n_s (Intuition–Sensing)：0–100 之间的整数，数值越大表示越偏向直觉  
     - t_f (Thinking–Feeling)：0–100 之间的整数，数值越大表示越偏向情感  
@@ -146,6 +147,7 @@ class DeepseekService:
         default_prompt = current_app.config['DEFAULT_ANALYSIS_PROMPT']
         content = (
             f"{default_prompt}\n\n"
+            f"并分析QQ号为：{speaker_id}的用户"
             f"{instructions}\n\n"
             f"聊天记录如下：\n{user_messages}"
         )
@@ -164,7 +166,7 @@ class DeepseekService:
         
         #更新speaker和group中speakers中的analyzed
         Speaker.update(user_id, speaker_id, result)
-        Group.update(user_id, group_id, speaker_id)  
+        ans = Group.update(user_id, group_id, speaker_id)
 
         speaker = Speaker.find(user_id, speaker_id)
         

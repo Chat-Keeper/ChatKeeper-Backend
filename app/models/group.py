@@ -96,13 +96,14 @@ class Group:
 
     @staticmethod
     def update(user_id, group_id, speaker_id):
-        group = Mongo.gorups.find_one({'user_id': user_id, 'group_id': group_id})
+        group = Mongo.groups.find_one({'user_id': user_id, 'group_id': group_id})
         if group is None:
             return None
         speaker_list = group['speaker_list']
         speaker = Speaker.find(user_id, speaker_id)
         speaker_qq = speaker['speaker_qq']
-        idx = next((index for index, speaker in enumerate(speaker_list) if speaker["speaker_qq"] == speaker_qq))
+        idx = next((index for index, item in enumerate(speaker_list) if item["speaker_qq"] == speaker_qq), -1)
+
         speaker_list[idx]['analyzed'] = True
         group['speaker_list'] = speaker_list
 

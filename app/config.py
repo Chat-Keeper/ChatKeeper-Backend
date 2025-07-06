@@ -57,7 +57,7 @@ class Config:
     # DEEPSEEK默认分析提示
     DEFAULT_ANALYSIS_PROMPT = os.getenv(
         'DEFAULT_ANALYSIS_PROMPT',
-        "你是一个专业的聊天记录分析师。请分析以下聊天内容，包括但不限于：\n"
+        "你是一个专业的聊天记录分析师。请根据以下聊天内容，包括但不限于：\n"
         "1. 主要讨论话题\n2. 情感倾向\n3. 关键人物\n4. 潜在问题或冲突\n"
         "5. 任何有趣的观察结果\n\n分析要求：使用专业、客观的语言."
     )
