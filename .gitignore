@@ -1,0 +1,75 @@
+# Python 编译文件和缓存
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# 虚拟环境
+venv/
+# .env/
+.venv/
+# env/
+ENV/
+
+# 开发环境变量和敏感数据
+# .env
+# .env.local
+# .env.*.local
+secrets.py
+config.py  # 如果包含敏感信息
+instance/  # Flask 实例文件夹（常含本地配置）
+
+# 日志文件
+*.log
+logs/
+
+# 编辑器/IDE 文件
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+*.swo
+
+# 操作系统生成文件
+.DS_Store
+Thumbs.db
+
+# 测试和覆盖率报告
+.coverage
+htmlcov/
+.pytest_cache/
+test-reports/
+
+# 包构建和分发文件
+build/
+dist/
+*.egg-info/
+*.egg
+pip-wheel-metadata/
+
+# 数据库文件（SQLite）
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+
+# 前端依赖（如适用）
+node_modules/
+static/dist/  # 如果使用前端构建工具
+
+# Flask 特定
+.flaskenv
+.webassets-cache
+
+# 其他
+.cache
+*.bak
+*.tmp
+*.pid
+*.sock
+
+# 临时文件
+storage/
