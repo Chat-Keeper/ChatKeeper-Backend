@@ -139,11 +139,12 @@ class Group:
                 continue
             speakers_list = group['speakers']
             value = message['speaker_qq']
-            index = next((i for i, d in enumerate(speakers_list) if d.get('speaker_qq') == value), None)
-            
-            if index is not None:
+            index = next((i for i, d in enumerate(speakers_list) if d['speaker_qq'] == value), -1)
+            #result_idx = next((index for index, speaker in enumerate(result) if speaker["speaker_qq"] == speaker_qq), -1)
+            if index != -1:
                 if message not in group['messages']:
                     speakers_list[index]['speaker_msg_freq'] += 1
+                    group['speakers'] = speakers_list
             else:
                 group['speaker_num'] += 1
                 new_info = {
@@ -200,7 +201,7 @@ class Group:
         # 返回数据
         return{
             'group_id': group['group_id'],
-            'group_name': group.get('group_name'),
+            'group_name': group['group_name'],
             'speaker_num': group['speaker_num'],
             'speaker_list': group['speakers'],
             'start_time': group['start_time'],
