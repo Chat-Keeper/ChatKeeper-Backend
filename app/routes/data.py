@@ -135,7 +135,7 @@ def speaker_list(user_id):
             "msg": "Successfully list all speakers.",
             "data": {
                 "speaker_nums": len(speaker_list_info),
-                "speaker_info": speaker_list_info
+                "speaker_list": speaker_list_info
             }
         }, 200
     else:
@@ -144,7 +144,7 @@ def speaker_list(user_id):
             "msg": "Can't find any groups.",
             "data": {
                 "speaker_nums": len(speaker_list_info),
-                "speaker_info": speaker_list_info
+                "speaker_list": speaker_list_info
             }
         }, 400
 
