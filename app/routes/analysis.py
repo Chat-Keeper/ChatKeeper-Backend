@@ -3,12 +3,15 @@ from app.utils.auth import token_required
 analysis_bp = Blueprint('analysis', __name__)
 from app.services.deppseek_service import DeepseekService
 from app.models.group import Group
+from app.models.speaker import Speaker
 
 @analysis_bp.route('/speaker', methods=['POST'])
 @token_required
 def speaker(user_id):
     speaker_id = request.form['speaker_id']
-    group_id = request.form['group_id']
+    speaker = Speaker.find(user_id, speaker_id)
+    #return speaker
+    group_id = speaker['group_id']
     try:
         result = DeepseekService.analysis(user_id, group_id, speaker_id)
     except RuntimeError as e:

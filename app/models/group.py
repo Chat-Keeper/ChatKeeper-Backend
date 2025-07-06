@@ -150,7 +150,7 @@ class Group:
                     'speaker_name': message['speaker_name'],
                     'speaker_qq': message['speaker_qq']
                 }
-                speaker = Speaker.create(user_id, new_info)  # 返回一个字典
+                speaker = Speaker.create(user_id, group_id, new_info)  # 返回一个字典
                 
                 new_speaker = {
                     'speaker_id': speaker['speaker_id'],
