@@ -7,8 +7,8 @@ auth_bp = Blueprint('auth', __name__)
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
-    username = request.form['username']
-    password = request.form['password']
+    username = request.json['username']
+    password = request.json['password']
     user = UserService.authenticate(username, password)
     if user:
         token = UserService.get_token(user["user_id"])
@@ -48,8 +48,8 @@ def logout(user_id):
 
 @auth_bp.route('/signup', methods=['POST'])
 def signup():
-    username = request.form['username']
-    password = request.form['password']
+    username = request.json['username']
+    password = request.json['password']
     user, error_code = UserService.create_user(username, password)
     if user:
         token = UserService.get_token(user["user_id"])
