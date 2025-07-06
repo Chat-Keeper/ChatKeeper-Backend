@@ -11,6 +11,7 @@ class Speaker:
     
     @staticmethod
     def create(user_id, group_id, new_info) -> dict:
+
  
         speaker_id = str(uuid4())
         Mongo.speakers.insert_one({
@@ -32,7 +33,8 @@ class Speaker:
         })
         result = Mongo.speakers.find_one({
             'user_id': user_id,
-            'group_id': group_id
+            'group_id': group_id,
+            'speaker_qq': new_info['speaker_qq']
         })
        
         return result
