@@ -10,11 +10,12 @@ Mongo = LocalProxy(lambda: current_app.mongo_db)
 class Speaker:
     
     @staticmethod
-    def create(user_id, new_info) -> dict:
+    def create(user_id, group_id, new_info) -> dict:
  
         speaker_id = str(uuid4())
         Mongo.speakers.insert_one({
             "user_id": user_id,
+            'group_id': group_id,
             "speaker_id": speaker_id,
             "speaker_name": new_info['speaker_name'],
             "speaker_qq": new_info['speaker_qq'],
@@ -31,8 +32,7 @@ class Speaker:
         })
         result = Mongo.speakers.find_one({
             'user_id': user_id,
-            'speaker_qq': new_info['speaker_qq'],
-            'speaker_name': new_info['speaker_name']
+            'group_id': group_id
         })
        
         return result
@@ -40,7 +40,10 @@ class Speaker:
     
     @staticmethod
     def find(user_id, speaker_id):
-        speaker = Mongo.speakers.find_one({'user_id': user_id, 'speaker_id': speaker_id})
+        speaker = Mongo.speakers.find_one(
+            {'user_id': user_id, 'speaker_id': speaker_id},  # 查询条件
+            {'_id': 0}  # 排除 _id 字段
+        )
         if speaker is None:
             return None
         return speaker
@@ -61,14 +64,14 @@ class Speaker:
             return None
         data.append(len(data))
         return data
-    
+    '''
     @staticmethod
     def get(user_id, speaker_id):
         speaker = Mongo.speakers.find_one({'user_id': user_id, 'speaker_id': speaker_id}, {'user_id': 0, 'last_analyzed_at': 0, '_id': 0})
         if speaker is None:
             return None
         return speaker
-    
+    '''
     @staticmethod
     def update(user_id, speaker_id, feature: dict) -> bool:
 
