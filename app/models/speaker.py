@@ -64,16 +64,16 @@ class Speaker:
         }))
         if not data:
             return None
-        data.append(len(data))
+        # data.append(len(data))
         return data
-    '''
+
     @staticmethod
     def get(user_id, speaker_id):
         speaker = Mongo.speakers.find_one({'user_id': user_id, 'speaker_id': speaker_id}, {'user_id': 0, 'last_analyzed_at': 0, '_id': 0})
         if speaker is None:
             return None
         return speaker
-    '''
+
     @staticmethod
     def update(user_id, speaker_id, feature: dict) -> bool:
 

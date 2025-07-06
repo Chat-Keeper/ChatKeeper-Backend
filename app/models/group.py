@@ -22,7 +22,7 @@ class Group:
             'end_time': str,
             'message_num': int
             'speaker_num': int
-            'speakers': [{
+            'speaker_list': [{
                     'speaker_id': str,
                     'speaker_name': str,
                     'speaker_qq': str,
@@ -50,7 +50,7 @@ class Group:
             'end_time': None,
             'message_num': 0,
             'speaker_num': 0,
-            'speakers': [],
+            'speaker_list': [],
             'messages': []
         })
         result = Mongo.groups.find_one({'user_id': user_id, 'group_name': group_name})
@@ -80,7 +80,7 @@ class Group:
         group = Mongo.groups.find_one({'group_id': group_id})
         if group is None:
             return None
-        result = Mongo.speakers.find_one({'speaker_id': speaker_id})
+        result = Mongo.speaker_list.find_one({'speaker_id': speaker_id})
         if result is None:
             return None
         return result
@@ -91,7 +91,7 @@ class Group:
         if user is None:
             return None
         data = list(Mongo.groups.find({'user_id': user_id}, {'user_id': 0, 'messages': 0, '_id':0}))
-        data.append(len(data))
+        # data.append(len(data))
         return data
 
     @staticmethod
@@ -99,17 +99,17 @@ class Group:
         group = Mongo.gorups.find_one({'user_id': user_id, 'group_id': group_id})
         if group is None:
             return None
-        speaker_list = group['speakers']
+        speaker_list = group['speaker_list']
         speaker = Speaker.find(user_id, speaker_id)
         speaker_qq = speaker['speaker_qq']
         idx = next((index for index, speaker in enumerate(speaker_list) if speaker["speaker_qq"] == speaker_qq))
         speaker_list[idx]['analyzed'] = True
-        group['speakers'] = speaker_list
+        group['speaker_list'] = speaker_list
 
         Mongo.groups.update_one(
             {'user_id': user_id, 'group_id': group_id},
             {'$set': {
-                'speakers': group['speakers']
+                'speaker_list': group['speaker_list']
             }}
         )
 
@@ -133,18 +133,18 @@ class Group:
         if not messages:
             return None
         
-        # 更新speakers列表
+        # 更新speaker_list列表
         for message in messages:
             if not message:
                 continue
-            speakers_list = group['speakers']
+            speaker_list = group['speaker_list']
             value = message['speaker_qq']
-            index = next((i for i, d in enumerate(speakers_list) if d['speaker_qq'] == value), -1)
+            index = next((i for i, d in enumerate(speaker_list) if d['speaker_qq'] == value), -1)
             #result_idx = next((index for index, speaker in enumerate(result) if speaker["speaker_qq"] == speaker_qq), -1)
             if index != -1:
                 if message not in group['messages']:
-                    speakers_list[index]['speaker_msg_freq'] += 1
-                    group['speakers'] = speakers_list
+                    speaker_list[index]['speaker_msg_freq'] += 1
+                    group['speaker_list'] = speaker_list
             else:
                 group['speaker_num'] += 1
                 new_info = {
@@ -160,7 +160,7 @@ class Group:
                     'analyzed': speaker['analyzed'],
                     'speaker_msg_freq': 1
                 }
-                group['speakers'].append(new_speaker)
+                group['speaker_list'].append(new_speaker)
 
 
         
@@ -193,7 +193,7 @@ class Group:
                 'message_num': group['message_num'],
                 'start_time': group['start_time'],
                 'end_time': group['end_time'],
-                'speakers': group['speakers'],
+                'speaker_list': group['speaker_list'],
                 'speaker_num': group['speaker_num'],
             }}
         )
@@ -203,7 +203,7 @@ class Group:
             'group_id': group['group_id'],
             'group_name': group['group_name'],
             'speaker_num': group['speaker_num'],
-            'speaker_list': group['speakers'],
+            'speaker_list': group['speaker_list'],
             'start_time': group['start_time'],
             'end_time': group['end_time'],
             'message_num': group['message_num'],
@@ -242,8 +242,8 @@ class Group:
         group = Mongo.groups.find_one({'user_id': user_id, 'group_id': group_id})
         if group is None:
             raise RuntimeError
-        
-        speaker_list = group['speakers']
+
+        speaker_list = group['speaker_list']
         messages = group['messages']
         if not messages:
             return RuntimeError
