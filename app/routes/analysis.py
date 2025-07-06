@@ -2,7 +2,7 @@ from flask import Blueprint, request
 from app.utils.auth import token_required
 analysis_bp = Blueprint('analysis', __name__)
 from app.services.deppseek_service import DeepseekService
-
+from app.models.group import Group
 
 @analysis_bp.route('/speaker', methods=['POST'])
 @token_required
@@ -42,7 +42,7 @@ def search(user_id):
     group_id = request.form['group_id']
     keyword = request.form['keyword']
     try:
-        result = DeepseekService.getAssociations(user_id, group_id, keyword)
+        result = Group.getAssociations(user_id, group_id, keyword)
     except RuntimeError as e:
         return {
             "code": 400,

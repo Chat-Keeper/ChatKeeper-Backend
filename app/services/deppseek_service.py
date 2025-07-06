@@ -10,8 +10,6 @@ from pymongo import MongoClient, ASCENDING
 from flask import current_app
 
 
-
-
 class DeepseekService:
 
     @staticmethod
@@ -35,13 +33,9 @@ class DeepseekService:
             if err.lower() in text.lower():
                 return False
 
-        #比如你期望返回必须包含 “Identity:” “tags:” “description:”
-        required_fields = ["identity", "tags", "description"]
-        lower = text.lower()
-        if not all(field + ":" in lower for field in required_fields):
+        if "result" not in text.lower():
             return False
 
-        #防止极短输出
         if len(text) < 20:
             return False
 
@@ -49,25 +43,22 @@ class DeepseekService:
     
     @staticmethod
     def generate(content):
-        #import os
-        os.environ["NO_PROXY"] = "api.deepseek.com"  # 禁用代理
-        API_KEY = "sk-4ea4ac74dc8d4d3ea512c9be9a4a3dfb" 
 
         # 初始化 OpenAI 客户端（DeepSeek兼容 OpenAI API）
         API_KEY = current_app.config['DEEPSEEK_API_KEY']
         BASE_URL = current_app.config['DEEPSEEK_BASE_URL']
         prompt = current_app.config['DEEPSEEK_PROMPT']
 
-        client = OpenAI(api_key = 'sk-4ea4ac74dc8d4d3ea512c9be9a4a3dfb', base_url = "https://api.deepseek.com/v1")
+        client = OpenAI(api_key = API_KEY, base_url = BASE_URL)
         response = client.chat.completions.create(
-            model="deepseek-reasoner",
+            model="deepseek-chat",
             messages = [
                 {"role": "system", "content": prompt}, 
                 {"role": "user", "content": content}
             ],
             stream=False
         )
-
+        
         #异常检测
         if not response.choices or not response.choices[0].message.content:
             raise ConnectionError
@@ -75,34 +66,11 @@ class DeepseekService:
         if not DeepseekService.is_valid_deepseek_reply(result):
             raise ConnectionError
         
-        return result
-        '''
-        headers = {
-            "Authorization": f"Bearer {API_KEY}",
-            "Content-Type": "application/json"
-        }
-        data = {
-            "model": "deepseek-reasoner",
-            "messages": [{"role": "user", "content": "Hello"}]
-        }
-        response = requests.post(
-            "https://api.deepseek.com/v1/chat/completions",
-            headers=headers,
-            json=data
-        )
-        return response.text
+        return response.choices[0].message.content
+        
     @staticmethod
     def analysis(user_id, group_id, speaker_id):
-        '''
-        info = [
-            {
-                'time_str':
-                'speaker_name':
-                'speaker_qq':
-                'content':
-            }
-        ]
-        '''
+
         #局部导入，防止循环导入
         from app.models.group import Group
         from app.models.speaker import Speaker
@@ -115,12 +83,35 @@ class DeepseekService:
         info = Group.acquire(user_id, group_id, speaker_id)
         if info is None:
             raise RuntimeError
-        #定义输出格式要求,确定输出内容
-        output_format = (
-            "identity: [i_e, n_s, t_f, p_j], 其中每个元素是 0-100 范围内的 integer\n"
-            "tags: [], 一个含有 3-5 个关键词的列表，元素为字符串\n"
-            "description: 一个长度为 300-500 的字符串"
-        )
+
+        analysis_prompt = """\
+    请你按照以下要求，只输出类似实例输出的pyhton代码，即一个符合Python语法的字典：
+    identity:  
+    - 一个包含以下四个成员的字典：
+    - i_e (Introversion–Extraversion)：0–100 之间的整数，数值越大表示越偏向外向  
+    - n_s (Intuition–Sensing)：0–100 之间的整数，数值越大表示越偏向直觉  
+    - t_f (Thinking–Feeling)：0–100 之间的整数，数值越大表示越偏向情感  
+    - p_j (Perceiving–Judging)：0–100 之间的整数，数值越大表示越偏向判断  
+
+    tags:  
+    - 一个长度为 4–8 的列表，包含描述用户性格特征或兴趣爱好的关键词，如“幽默”、“严谨”、“户外运动爱好者”等  
+
+    description:  
+    - 用 300–500 字的连贯段落，结合上述 MBTI 维度与标签，为用户画像作详细阐述  
+    - 要点可包括：  
+    1. 性格倾向如何影响其日常行为  
+    2. 兴趣爱好对其社交或职业的意义  
+    3. MBTI 四个维度综合后呈现出的典型特点  
+
+    示例输出：
+    result = {
+        identity: { i_e: 34, n_s: 76, t_f: 45, p_j: 82 },
+        tags: ['幽默', '好奇心强', '数据驱动', '阅读爱好者'],
+        description: '该用户具有较高的开放性与外向性，...（30–50 字）...'
+    }
+                
+    """
+
         #将之前的分析结果转换为字符串
         if speaker['analyzed'] == True:
             analysis_dict = {
@@ -128,21 +119,23 @@ class DeepseekService:
                 'tags': speaker['tags'],
                 'description': speaker['description']
             }
+            identity = analysis_dict['identity']
+            tags = analysis_dict['tags']
+            description = analysis_dict['description']
             pre_analysis = (
-                f"Identity: {analysis_dict['identity']}\n"
-                f"tags: {json.dumps(analysis_dict['tags'], ensure_ascii=False)}\n"
-                f"description: \"{analysis_dict['description']}\"\n"
+                f"identity: {{ i_e: {identity['i_e']}, n_s: {identity['n_s']}, "
+                f"t_f: {identity['t_f']}, p_j: {identity['p_j']} }}\n"
+                f"tags: {tags}\n"
+                f"description: '{description}'"
             )
             instructions = (
             "并结合你上次的分析结果：\n"
             f"{pre_analysis}"
-            "对于你的回答格式，要求你生成格式如下：\n"
-            f"{output_format}"
+            f"{analysis_prompt}"
             )
         else:
             instructions = (
-            "对于你的回答格式，要求你生成格式如下：\n"
-            f"{output_format}"
+            f"{analysis_prompt}"
             )
 
         #构造聊天记录字符串
@@ -157,45 +150,20 @@ class DeepseekService:
             f"聊天记录如下：\n{user_messages}"
         )
 
-        s = DeepseekService.generate(content)
+        str = DeepseekService.generate(content)
+        #return str
+        start = str.find('{')
+        end = str.rfind('}')
+        s = str[start:end+1]
+        result = ast.literal_eval(s)
 
-        #将结果转换为python类型，识别包含空格，换行
-        # 1. 预编译正则
-        PAT_ID = re.compile(
-            r"Identity:\s*(\[\s*[0-9]+(?:\s*,\s*[0-9]+)*\s*\])",
-            flags=re.IGNORECASE | re.MULTILINE
-        )
-        PAT_TAGS = re.compile(
-            r"tags:\s*(\[\s*\"[^\"]+\"(?:\s*,\s*\"[^\"]+\")*\s*\])",
-            flags=re.IGNORECASE | re.MULTILINE
-        )
-        PAT_DESC = re.compile(
-            r"description:\s*\"([\s\S]{1,1000}?)\"",
-            flags=re.IGNORECASE | re.MULTILINE
-        )
-        #提取文本
-        m_id = PAT_ID.search(s)
-        if m_id:
-            identity = ast.literal_eval(m_id.group(1))
-
-        m_tags = PAT_TAGS.search(s)
-        if m_tags:
-            tags = ast.literal_eval(m_tags.group(1))
-
-        m_desc = PAT_DESC.search(s)
-        description = m_desc.group(1).strip() if m_desc else ""
-
-        result = {
-            "Identity": identity,
-            "tags": tags,
-            "description": description
-        }
-
+        
         #更新speaker和group中speakers中的analyzed
         Speaker.update(user_id, speaker_id, result)
-        Group.update(user_id, group_id, speaker_id)
+        Group.update(user_id, group_id, speaker_id)  
 
         speaker = Speaker.find(user_id, speaker_id)
+        
         return{
             'speaker_id': speaker['speaker_id'],
             'speaker_name': speaker['speaker_name'],
@@ -205,21 +173,27 @@ class DeepseekService:
             'tags': speaker['tags'],
             'description': speaker['description']
         }
+        
     @staticmethod
     def get_keywords(keyword):
 
-        description = keyword + '\n根据我给你的关键词，生成与这个关键词意思相近的100个关键词\n'
+        description = '根据我给你的关键词，生成与这个关键词意思相近的100个关键词\n'
         #定义输出格式要求,确定输出内容
-        output_format = "keyword_list: ['', '', ''], 其中每个元素是一个关键词\n"
-        instructions = (
-            "对于你的回答格式，要求你生成格式如下：\n"
-            f"{output_format}"
-        )
+        output_format = """\
+        请你按照以上要求，只输出类似实例输出的pyhton代码，即一个符合Python语法的字典：
+        实例输出：
+        result = ['善良'， '热情'，'乐于助人']
+        """
         content = (
+            f"关键词为：{keyword}"
             f"{description}\n\n"
-            f"{instructions}\n\n"
+            f"{output_format}\n\n"
         )
         str = DeepseekService.generate(content)
-        # 提取列表部分并转换
-        keyword_list = eval(str.split(': ')[1])
-        return keyword_list
+        
+        start = str.find('[')
+        end = str.rfind(']')
+        s = str[start:end+1]
+        result = ast.literal_eval(s)
+        
+        return result

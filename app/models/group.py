@@ -96,11 +96,22 @@ class Group:
 
     @staticmethod
     def update(user_id, group_id, speaker_id):
-        group = Mongo.gorups.find_one({'user_id': user_id, 'group_id': group_id, 'speaker_id': speaker_id})
+        group = Mongo.gorups.find_one({'user_id': user_id, 'group_id': group_id})
+        if group is None:
+            return None
         speaker_list = group['speakers']
         speaker = Speaker.find(user_id, speaker_id)
-        index = speaker_list.index(speaker)
-        speaker_list[index]['analyzed'] = True
+        speaker_qq = speaker['speaker_qq']
+        idx = next((index for index, speaker in enumerate(speaker_list) if speaker["speaker_qq"] == speaker_qq))
+        speaker_list[idx]['analyzed'] = True
+        group['speakers'] = speaker_list
+
+        Mongo.groups.update_one(
+            {'user_id': user_id, 'group_id': group_id},
+            {'$set': {
+                'speakers': group['speakers']
+            }}
+        )
 
     @staticmethod
     def destroy(user_id, group_id):
@@ -206,8 +217,10 @@ class Group:
         if not msg_list:
             return None
         combined = []
+        speaker = Speaker.find(user_id, speaker_id)
+        speaker_qq = speaker['speaker_qq']
         for idx, message in enumerate(msg_list):
-            if message['speaker_id'] == speaker_id:
+            if message['speaker_qq'] == speaker_qq:
                 front_ten = msg_list[max(0, idx-10):idx]
                 back_ten = msg_list[idx+1:min(len(msg_list), idx+11)]
                 combined += front_ten + [message] + back_ten
@@ -225,14 +238,14 @@ class Group:
 
     @staticmethod
     def getAssociations(user_id, group_id, keyword: str):
-        group = Mongo.groups_find_one({'user_id': user_id, 'group_id': group_id})
+        group = Mongo.groups.find_one({'user_id': user_id, 'group_id': group_id})
         if group is None:
-            return None
+            raise RuntimeError
         
         speaker_list = group['speakers']
         messages = group['messages']
         if not messages:
-            return None
+            return RuntimeError
         keyword_list = DeepseekService.get_keywords(keyword)
         result = []
         for message in messages:
@@ -261,7 +274,7 @@ class Group:
                         break
 
         for speaker in result:
-            speaker['relativity'] = speaker['match_count'] / speaker['speaker_msg_freq']
+            speaker['relativity'] = speaker['match_count'] / speaker['speaker_msg_freq'] * 10
             speaker.pop('speaker_msg_freq', None)
             speaker.pop('match_count', None)
         
