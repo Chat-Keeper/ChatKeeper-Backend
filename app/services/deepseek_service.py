@@ -51,7 +51,7 @@ class DeepseekService:
 
         client = OpenAI(api_key = API_KEY, base_url = BASE_URL)
         response = client.chat.completions.create(
-            model="deepseek-chat",
+            model = current_app.config['DEEPSEEK_MODEL'],
             messages = [
                 {"role": "system", "content": prompt}, 
                 {"role": "user", "content": content}
@@ -86,7 +86,7 @@ class DeepseekService:
 
         speaker_qq = speaker['speaker_qq']
         analysis_prompt = """\
-    请你按照以下要求，只输出类似实例输出的pyhton代码，即一个符合Python语法的字典：
+    \n请你按照以下要求，只输出类似实例输出的python代码，即一个符合Python语法的字典：
     identity:  
     - 一个包含以下四个成员的表示用户身份字典：其中i_e, n_s, t_f, p_j都是MBTI的评判标准
     - i_e (Introversion–Extraversion)：0–100 之间的整数，数值越大表示越偏向外向  
@@ -98,17 +98,19 @@ class DeepseekService:
     - 一个长度为 8-10 的列表，包含描述用户性格特征或兴趣爱好的关键词，如“幽默”、“严谨”、“户外运动爱好者”等  
 
     description:  
-    - 用 300–500 字的连贯段落，结合上述 MBTI 维度与标签，为用户画像作详细阐述  
+    - 用 500–1000字的连贯段落，结合上述 MBTI 维度与标签，为用户画像作详细阐述  
     - 要点可包括：  
     1. 性格倾向如何影响其日常行为  
     2. 兴趣爱好对其社交或职业的意义  
-    3. MBTI 四个维度综合后呈现出的典型特点  
+    3. MBTI 四个维度综合后呈现出的典型特点
+    - 请生成可读性强的文本，避免在文字中使用'p_j'这类不易读标识符，使用'I'或'T'这样的单个字母会好很多
+    - 文本中的MBTI描述应当与identity部分的MBTI值相吻合
 
     示例输出：
     result = {
-        identity: { i_e: 34, n_s: 76, t_f: 45, p_j: 82 },
+        identity: { i_e: 50, n_s: 50, t_f: 50, p_j: 50 },
         tags: ['幽默', '好奇心强', '数据驱动', '阅读爱好者'],
-        description: '该用户具有较高的开放性与外向性，...（300–500 字）...'
+        description: '该用户具有较高的开放性与外向性，...（500–1000 字）...'
     }
                 
     """
@@ -144,15 +146,21 @@ class DeepseekService:
             f"[{msg['time_str']}] {msg['speaker_name']} ({msg['speaker_qq']}): {msg['content']}"
             for msg in info
         )
+
+        if len(user_messages) > 100000:
+            user_messages = user_messages[-100000:]
+
         default_prompt = current_app.config['DEFAULT_ANALYSIS_PROMPT']
         content = (
             f"{default_prompt}\n\n"
-            f"并分析QQ号为：{speaker_id}的用户"
+            f"通过聊天记录分析QQ号为：{speaker['speaker_qq']}的用户{speaker['speaker_name']}的性格，并进行MBTI人格量化分析，反映要求的输出结构中\n"
+            f"请注意区别群聊氛围与个人性格，将目标用户的发言与其他人对比，排除群聊整体氛围对于用户个人性格分析的影响\n"
+            f"在分析完成之后，回看聊天记录，反思一下，询问自己是否认可刚才的分析结果\n"
+            f"- （注意到你总是给出过于偏向E、S、J的评判结果，这可能是衡量标准出现了偏差，请注意采取合适的权重）"
+            f"- （请注意，群聊发言并不等同于现实性格，但你应该通过发言去猜测用户在现实中的MBTI，而不是仅仅停留在对于用户发言的浅层分析上）"
             f"{instructions}\n\n"
             f"聊天记录如下：\n{user_messages}"
         )
-        content += f"\n\n你要分析的用户是 {speaker['speaker_name'] + ' (' + speaker['speaker_qq'] + ')'}"
-        content += f"\n请注意区别群聊氛围与个人性格，排除群聊整体氛围对于个人性格分析的影响"
 
         print(content)
 

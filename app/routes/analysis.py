@@ -1,7 +1,7 @@
 from flask import Blueprint, request
 from app.utils.auth import token_required
 analysis_bp = Blueprint('analysis', __name__)
-from app.services.deppseek_service import DeepseekService
+from app.services.deepseek_service import DeepseekService
 from app.models.group import Group
 from app.models.speaker import Speaker
 
@@ -19,7 +19,7 @@ def speaker(user_id):
             "code": 400,
             "msg": "Failed to get data from database",
             "data": {}
-        }, 400
+        }
     except ConnectionError as c:
         return {
             "code": 405,

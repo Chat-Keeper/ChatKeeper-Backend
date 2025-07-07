@@ -12,9 +12,10 @@ venv/
 ENV/
 
 # 开发环境变量和敏感数据
-# .env
-# .env.local
-# .env.*.local
+.env
+.env.local
+.env.*.local
+!.env.example
 secrets.py
 config.py  # 如果包含敏感信息
 instance/  # Flask 实例文件夹（常含本地配置）
