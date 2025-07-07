@@ -4,7 +4,7 @@ from pymongo import MongoClient, ASCENDING
 from flask import current_app
 from werkzeug.local import LocalProxy
 from app.models.speaker import Speaker
-from app.services.deppseek_service import DeepseekService
+from app.services.deepseek_service import DeepseekService
 
 Mongo = LocalProxy(lambda: current_app.mongo_db)
 

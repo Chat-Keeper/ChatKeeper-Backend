@@ -18,20 +18,20 @@ def data_upload(user_id):
             "code": 402,
             "msg": "No file part",
             "data": {}
-        }, 402
+        }, 200
     chat_log = request.files['chat_log']
     if chat_log.filename == '':
         return {
             "code": 402,
             "msg": "'No selected file'",
             "data": {}
-        }, 402
+        }, 200
     if not allowed_file(chat_log.filename):
         return {
             "code": 402,
             "msg": "Invalid file extension. Only .txt files are allowed",
             "data": {}
-        }, 402
+        }, 200
     file_name = secure_filename(chat_log.filename)
 
     user_dir = os.path.join(current_app.config['UPLOAD_FOLDER'], str(user_id))
@@ -45,19 +45,19 @@ def data_upload(user_id):
             "code": 403,
             "msg": str(v),
             "data": {}
-        }, 403
+        }, 200
     except RuntimeError as r:
         return {
             "code": 400,
             "msg": str(r),
             "data": {}
-        }, 400
+        }, 200
     except Exception as e:
         return {
             "code": 404,
             "msg": f"Unknown error:{str(e)}",
             "data": {}
-        }, 404
+        }, 200
     return {
         "code": 200,
         "msg": "Successfully uploaded data",
@@ -81,7 +81,7 @@ def group_list(user_id):
             "code": 400,
             "msg": "Can't find any groups.",
             "data": {}
-        }, 400
+        }, 200
 
 
 @data_bp.route('/group/new', methods=['POST'])
@@ -102,7 +102,7 @@ def group_new(user_id):
             "code": 400,
             "msg": "Fail to create new groups.",
             "data": {}
-        }, 400
+        }, 200
 
 
 @data_bp.route('/group/rename', methods=['POST'])
@@ -122,14 +122,14 @@ def group_rename(user_id):
             "code": 400,
             "msg": "Fail to rename the group.",
             "data": {}
-        }, 400
+        }, 200
 
 
 @data_bp.route('/speaker/list', methods=['GET'])
 @token_required
 def speaker_list(user_id):
     speaker_list_info = DataService.list_all_speaker(user_id)
-    if speaker_list:
+    if speaker_list_info:
         return {
             "code": 200,
             "msg": "Successfully list all speakers.",
@@ -141,12 +141,12 @@ def speaker_list(user_id):
     else:
         return {
             "code": 400,
-            "msg": "Can't find any groups.",
+            "msg": "Can't find any speakers",
             "data": {
                 "speaker_nums": len(speaker_list_info),
                 "speaker_list": speaker_list_info
             }
-        }, 400
+        }, 200
 
 
 @data_bp.route('/speaker/details', methods=['GET'])
@@ -165,7 +165,7 @@ def speaker_detail(user_id):
             "code": 400,
             "msg": "Can't get details of speaker.",
             "data": {}
-        }, 400
+        }, 200
 
 
 @data_bp.route('/group/delete', methods=['POST'])
@@ -183,4 +183,4 @@ def group_delete(user_id):
             "code": 400,
             "msg": "Fail to delete the group.",
             "data": {}
-        }, 400
+        }, 200
