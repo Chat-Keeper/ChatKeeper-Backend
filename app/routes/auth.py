@@ -26,7 +26,7 @@ def login():
             "code": 400,
             "msg": "Wrong username or password",
             "data": {}
-        }, 400
+        }, 200
 
 
 @auth_bp.route('/logout', methods=['POST'])
@@ -68,14 +68,13 @@ def signup():
                 "code": 400,
                 "msg": "username has already been registered",
                 "data": {}
-            }, 400
+            }, 200
         elif error_code == 401:
             return {
                 "code": 401,
                 "msg": "invalid username or password",
                 "data": {}
-            }, 401
-
+            }, 200
 
 @auth_bp.route('/verification', methods=['POST'])
 @token_required

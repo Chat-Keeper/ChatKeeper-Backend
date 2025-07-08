@@ -1,11 +1,11 @@
 # 聊效管家-后端
 
-v1.0已发布
+### **🔖 最新版本：v0.1.1**
 
 # 聊效管家后端服务用户部署指南
 
 ## 技术栈概要
-- **框架**: Flask (Python 3.13)
+- **框架**: Flask (Python 3.11)
 - **数据库**: MongoDB
 - **API规范**: RESTful
 - **依赖管理**: requirements.txt
@@ -16,19 +16,19 @@ v1.0已发布
 
 ### 1. 获取项目代码
 ```bash
-# 下载项目压缩包并解压（或使用Git克隆）
-unzip chat-analyzer-backend.zip -d project_dir
-cd project_dir/backend  # 进入后端专属目录
+# 克隆项目到本地
+git clone https://github.com/Chat-Keeper/ChatKeeper-Backend.git
+cd ChatKeeper-Backend  # 进入项目目录
 ```
 ### 2. python环境配置
-#### 重要提示：项目依赖Python 3.13特有语法特性，低版本会导致启动失败
+#### 重要提示：项目推荐版本为Python 3.11，使用其他版本的Python可能导致不可预料的错误
 ```bash
 # 创建并激活虚拟环境（推荐）
-python3.13 -m venv venv
+python3.11 -m venv venv
 source venv/bin/activate  # Linux/macOS
 venv\Scripts\activate    # Windows
 
-# 安装依赖库（注意：必须使用Python 3.13）
+# 安装依赖库（注意：必须使用Python 3.11）
 pip install -r requirements.txt
 ```
 ### 3. 数据库配置
